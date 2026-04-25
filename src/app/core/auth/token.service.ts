@@ -7,7 +7,7 @@ export class TokenService {
 
   private readonly KEY = 'tienda_online_token';
   
-  readonly hasToken = signal(this.get() !== null);
+  readonly hasToken = signal(this.getToken() !== null);
 
 
   save(token: string): void {
@@ -16,17 +16,17 @@ export class TokenService {
   }
 
 
-  get(): string | null {
-    return localStorage.getItem(this.KEY);
+  getToken(): string | null { 
+  return localStorage.getItem(this.KEY);
   }
 
 
-  clear(): void {
-    localStorage.removeItem(this.KEY);
-    this.hasToken.set(false);
-  }
+  removeToken(): void { 
+  localStorage.removeItem(this.KEY);
+  this.hasToken.set(false);
+}
 
   isLogged(): boolean {
-    return this.get() !== null;
+    return this.getToken() !== null;
   }
 }
