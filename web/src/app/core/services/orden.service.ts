@@ -7,10 +7,9 @@ import { OrdenRead, OrdenCreate, OrdenUpdate, UUID } from '../../models/api.mode
 @Injectable({
   providedIn: 'root',
 })
-export class PedidoService {
+export class OrdenService {
   private readonly http = inject(HttpClient);
-
-  private readonly url = `${environment.apiUrl}/pedidos`;
+  private readonly url = `${environment.apiUrl}/ordenes`;
 
   list(): Observable<OrdenRead[]> {
     return this.http.get<OrdenRead[]>(this.url);
