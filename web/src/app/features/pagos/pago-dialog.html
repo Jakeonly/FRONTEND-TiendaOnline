@@ -1,37 +1,55 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo pago' : 'Editar pago' }}</h2>
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo Pago' : 'Editar Pago' }}</h2>
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
+    
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Pedido</mat-label>
+      <mat-label>Pedido Asociado</mat-label>
       <mat-select formControlName="id_pedido">
         @for (p of pedidos(); track p.id_pedido) {
-          <mat-option [value]="p.id_pedido">{{ p.nombre }}</mat-option>
+          <mat-option [value]="p.id_pedido">Pedido #{{ p.id_pedido | slice:0:8 }} - Total: {{ p.total_pedido | currency }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Nombre</mat-label>
-      <input matInput formControlName="nombre" />
+      <mat-label>Nombre del Pago / Concepto</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Pago Mensualidad" />
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
       <mat-label>Descripción</mat-label>
       <textarea matInput rows="2" formControlName="descripcion"></textarea>
     </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Monto</mat-label>
+      <input matInput type="number" formControlName="monto" />
+      <span matTextPrefix>$&nbsp;</span>
+    </mat-form-field>
+
     <mat-form-field appearance="outline">
       <mat-label>Estado</mat-label>
-      <input matInput formControlName="estado" />
+      <mat-select formControlName="estado">
+        <mat-option value="pendiente">Pendiente</mat-option>
+        <mat-option value="completado">Completado</mat-option>
+        <mat-option value="fallido">Fallido</mat-option>
+      </mat-select>
     </mat-form-field>
+
     <mat-form-field appearance="outline">
-      <mat-label>Referencia</mat-label>
+      <mat-label>Referencia de Transacción</mat-label>
       <input matInput formControlName="referencia" />
     </mat-form-field>
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Tipo de pago</mat-label>
-      <input matInput formControlName="tipo_pago" />
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo de Pago</mat-label>
+      <input matInput formControlName="tipo_pago" placeholder="Ej: PSE, Tarjeta" />
     </mat-form-field>
+
   </form>
 </mat-dialog-content>
+
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" type="button" (click)="save()">Guardar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">Guardar Pago</button>
 </mat-dialog-actions>

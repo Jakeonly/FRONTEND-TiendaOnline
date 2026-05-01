@@ -7,16 +7,18 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 import { PagoService } from '../../core/services/pago.service';
 import { PagoRead } from '../../models/api.models';
-import { shortId } from '../../shared/ids';
 import { PagoDialogComponent, PagoDialogData } from './pago-dialog';
 
 @Component({
   selector: 'app-pago-list',
+  standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -32,14 +34,7 @@ export class PagoListComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = [
-    'nombre',
-    'id_pedido',
-    'referencia',
-    'tipo_pago',
-    'estado',
-    'acciones',
-  ];
+  readonly displayedColumns = ['nombre', 'id_pedido', 'referencia', 'tipo_pago', 'monto', 'estado', 'acciones'];
   readonly dataSource = new MatTableDataSource<PagoRead>([]);
   loading = true;
 
@@ -49,11 +44,7 @@ export class PagoListComponent implements AfterViewInit {
     this.dataSource.paginator = this.paginator;
   }
 
-  constructor() {
-    this.reload();
-  }
-
-  shortId = shortId;
+  constructor() { this.reload(); }
 
   reload(): void {
     this.loading = true;
@@ -69,17 +60,13 @@ export class PagoListComponent implements AfterViewInit {
     });
   }
 
-  nuevo(): void {
-    this.open({ mode: 'create' });
-  }
+  nuevo(): void { this.open({ mode: 'create' }); }
 
-  editar(row: PagoRead): void {
-    this.open({ mode: 'edit', row });
-  }
+  editar(row: PagoRead): void { this.open({ mode: 'edit', row }); }
 
   private open(data: PagoDialogData): void {
     this.dialog
-      .open(PagoDialogComponent, { width: '520px', data })
+      .open(PagoDialogComponent, { width: '550px', data })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
@@ -99,7 +86,7 @@ export class PagoListComponent implements AfterViewInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

@@ -186,20 +186,80 @@ export interface DescuentoUpdate {
 
 // --- 9. PAGOS ---
 export interface PagoRead {
-  id: UUID;
-  orden_id: UUID;
+  id_pago: UUID;     
+  id_pedido: UUID;     
+  nombre: string;       
+  descripcion?: string;   
   monto: number;
-  metodo_pago: string; 
-  estado: string;      
-  fecha_pago: string;
+  referencia: string;     
+  tipo_pago: string;       
+  estado: string;         
+  fecha_creacion: string;
 }
 
 export interface PagoCreate {
-  orden_id: UUID;
+  id_pedido: UUID;
+  nombre: string;
+  descripcion?: string;
   monto: number;
-  metodo_pago: string;
+  referencia: string;
+  tipo_pago: string;
+  estado?: string;
 }
 
 export interface PagoUpdate {
+  nombre?: string;
+  descripcion?: string;
+  estado?: string;
+  referencia?: string;
+}
+
+// --- 10. PEDIDOS---
+export interface PedidoRead {
+  id_pedido: UUID;
+  id_usuario: UUID;
+  fecha_pedido: string;
+  estado_pedido: string;
+  direccion_envio: string;
+  total_pedido: number;
+  fecha_creacion: string;
+}
+
+export interface PedidoCreate {
+  id_usuario: UUID;
+  direccion_envio: string;
+  total_pedido: number;
+  estado_pedido?: string;
+}
+
+export interface PedidoUpdate {
+  estado_pedido?: string;
+  direccion_envio?: string;
+}
+
+// --- 11. DETALLE PEDIDO ---
+export interface DetallePedidoRead {
+  id_detalle_pedido: UUID; 
+  id_pedido: UUID;
+  id_producto: UUID;
+  nombre: string;          
+  descripcion?: string;
+  estado?: string; 
+  fecha_creacion: string;
+}
+
+export interface DetallePedidoCreate {
+  id_pedido: UUID;
+  id_producto: UUID;
+  nombre: string;
+  descripcion?: string;
+  estado?: string;
+}
+
+export interface DetallePedidoUpdate {
+  id_pedido?: UUID;
+  id_producto?: UUID;
+  nombre?: string;
+  descripcion?: string;
   estado?: string;
 }

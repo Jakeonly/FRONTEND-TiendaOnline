@@ -1,26 +1,29 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 import { DetallePedidoService } from '../../core/services/detalle-pedido.service';
 import { DetallePedidoRead } from '../../models/api.models';
-import { shortId } from '../../shared/ids';
 import { DetallePedidoDialogComponent, DetallePedidoDialogData } from './detalle-pedido-dialog';
 
 @Component({
   selector: 'app-detalle-pedido-list',
+  standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
+    MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -46,8 +49,6 @@ export class DetallePedidoListComponent implements AfterViewInit {
     this.reload();
   }
 
-  shortId = shortId;
-
   reload(): void {
     this.loading = true;
     this.svc.list().subscribe({
@@ -63,26 +64,26 @@ export class DetallePedidoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
-    this.open({ mode: 'create' });
+    this.openDialog({ mode: 'create' });
   }
 
   editar(row: DetallePedidoRead): void {
-    this.open({ mode: 'edit', row });
+    this.openDialog({ mode: 'edit', row });
   }
 
-  private open(data: DetallePedidoDialogData): void {
+  private openDialog(data: DetallePedidoDialogData): void {
     this.dialog
-      .open(DetallePedidoDialogComponent, { width: '560px', data })
+      .open(DetallePedidoDialogComponent, { width: '520px', data })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
   }
 
   eliminar(row: DetallePedidoRead): void {
-    if (!confirm(`¿Eliminar detalle ${row.nombre}?`)) return;
+    if (!confirm(`¿Eliminar detalle "${row.nombre}"?`)) return;
     this.svc.delete(row.id_detalle_pedido).subscribe({
       next: () => {
-        this.snack.open('Detalle eliminado', 'OK', { duration: 3000 });
+        this.snack.open('Detalle eliminado correctamente', 'OK', { duration: 3000 });
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
@@ -92,7 +93,7 @@ export class DetallePedidoListComponent implements AfterViewInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

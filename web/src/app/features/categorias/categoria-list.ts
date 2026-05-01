@@ -1,12 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 import { CategoriaService } from '../../core/services/categoria.service';
@@ -15,11 +16,14 @@ import { CategoriaDialogComponent, CategoriaDialogData } from './categoria-dialo
 
 @Component({
   selector: 'app-categoria-list',
+  standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
+    MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -31,13 +35,7 @@ export class CategoriaListComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = [
-    'nombre',
-    'descripcion',
-    'estado',
-    'fecha_creacion',
-    'acciones',
-  ];
+  readonly displayedColumns = ['nombre', 'descripcion', 'estado', 'acciones'];
   readonly dataSource = new MatTableDataSource<CategoriaRead>([]);
   loading = true;
 
@@ -66,14 +64,14 @@ export class CategoriaListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
-    this.open({ mode: 'create' });
+    this.openDialog({ mode: 'create' });
   }
 
   editar(row: CategoriaRead): void {
-    this.open({ mode: 'edit', row });
+    this.openDialog({ mode: 'edit', row });
   }
 
-  private open(data: CategoriaDialogData): void {
+  private openDialog(data: CategoriaDialogData): void {
     this.dialog
       .open(CategoriaDialogComponent, { width: '480px', data })
       .afterClosed()
@@ -83,7 +81,7 @@ export class CategoriaListComponent implements AfterViewInit {
 
   eliminar(row: CategoriaRead): void {
     if (!confirm(`¿Eliminar categoría ${row.nombre}?`)) return;
-    this.svc.delete(row.id_categoria).subscribe({
+    this.svc.delete(row.id).subscribe({
       next: () => {
         this.snack.open('Categoría eliminada', 'OK', { duration: 3000 });
         this.reload();
@@ -95,7 +93,7 @@ export class CategoriaListComponent implements AfterViewInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

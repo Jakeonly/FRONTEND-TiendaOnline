@@ -2,30 +2,25 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrdenRead, OrdenCreate, OrdenUpdate, UUID } from '../../models/api.models';
+import { PedidoRead, PedidoCreate, PedidoUpdate, UUID } from '../../models/api.models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PedidoService {
   private readonly http = inject(HttpClient);
-
   private readonly url = `${environment.apiUrl}/pedidos`;
 
-  list(): Observable<OrdenRead[]> {
-    return this.http.get<OrdenRead[]>(this.url);
+  list(): Observable<PedidoRead[]> {
+    return this.http.get<PedidoRead[]>(this.url);
   }
 
-  get(id: UUID): Observable<OrdenRead> {
-    return this.http.get<OrdenRead>(`${this.url}/${id}`);
+  create(data: PedidoCreate): Observable<PedidoRead> {
+    return this.http.post<PedidoRead>(this.url, data);
   }
 
-  create(data: OrdenCreate): Observable<OrdenRead> {
-    return this.http.post<OrdenRead>(this.url, data);
-  }
-
-  update(id: UUID, data: OrdenUpdate): Observable<OrdenRead> {
-    return this.http.patch<OrdenRead>(`${this.url}/${id}`, data);
+  update(id: UUID, data: PedidoUpdate): Observable<PedidoRead> {
+    return this.http.patch<PedidoRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

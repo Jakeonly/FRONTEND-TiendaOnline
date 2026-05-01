@@ -11,6 +11,11 @@ export class DetalleCarritoService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/detalle-carrito`;
 
+ 
+  list(): Observable<DetalleCarritoRead[]> {
+    return this.http.get<DetalleCarritoRead[]>(this.url);
+  }
+
   listByCarrito(carritoId: UUID): Observable<DetalleCarritoRead[]> {
     return this.http.get<DetalleCarritoRead[]>(`${this.url}/carrito/${carritoId}`);
   }
@@ -23,7 +28,7 @@ export class DetalleCarritoService {
     return this.http.patch<DetalleCarritoRead>(`${this.url}/${id}`, data);
   }
 
-  remove(id: UUID): Observable<void> {
+  delete(id: UUID): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
 }
