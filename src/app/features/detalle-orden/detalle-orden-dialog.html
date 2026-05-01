@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Vincular Producto' : 'Editar Detalle' }}</h2>
+<mat-dialog-content class="dialog-body">
+  <form [formGroup]="form" class="grid">
+    
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>ID Orden (UUID)</mat-label>
+      <input matInput formControlName="orden_id" readonly />
+      <mat-hint>Vinculado a la orden seleccionada</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>ID Producto (UUID)</mat-label>
+      <input matInput formControlName="producto_id" placeholder="Ingrese UUID del producto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cantidad</mat-label>
+      <input matInput type="number" formControlName="cantidad" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Precio Unitario</mat-label>
+      <input matInput type="number" formControlName="precio_unitario" />
+    </mat-form-field>
+
+    <div class="subtotal-display span-2" style="text-align: right; padding: 10px; background: #eee; border-radius: 4px;">
+      <strong>Subtotal: </strong> {{ (form.get('cantidad')?.value || 0) * (form.get('precio_unitario')?.value || 0) | currency }}
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()">Guardar Detalle</button>
+</mat-dialog-actions>

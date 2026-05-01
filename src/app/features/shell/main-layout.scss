@@ -1,0 +1,165 @@
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.shell {
+  height: 100%;
+}
+
+// Estilos del menú lateral 
+.nav-rail {
+  width: 260px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &.collapsed {
+    width: 72px;
+
+    .nav-label {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .nav-brand__text {
+      display: none;
+    }
+  }
+}
+
+// Logo y título de la tienda
+.nav-brand {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  height: 64px;
+  gap: 12px;
+  background-color: #f8f9fa;
+
+  &__mark {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #3f51b5; // Color primario de Angular Material
+    color: white;
+    border-radius: 8px;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__title {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: #666;
+  }
+}
+
+// Lista de items del menú
+.nav-list {
+  flex: 1;
+  padding-top: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  .nav-item {
+    margin: 4px 8px;
+    border-radius: 8px;
+    height: 48px;
+
+    &__icon {
+      margin-right: 12px;
+      color: #5f6368;
+    }
+
+    &.active-link {
+      background-color: rgba(63, 81, 181, 0.1);
+      color: #3f51b5;
+
+      .nav-item__icon {
+        color: #3f51b5;
+      }
+    }
+  }
+}
+
+.nav-label {
+  transition: opacity 0.2s;
+}
+
+// Botón inferior para colapsar
+.nav-footer {
+  padding: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+  .collapse-btn {
+    width: 100%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 12px;
+    height: 40px;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Barra superior 
+.top-bar {
+  background: white;
+  color: #333;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 8px;
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .title {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+}
+
+.user-welcome {
+  font-size: 0.9rem;
+  color: #666;
+  margin-right: 12px;
+}
+
+// Área de contenido principal
+.main-column {
+  background-color: #f4f6f8;
+}
+
+.content {
+  padding: 24px;
+  
+  &-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    min-height: calc(100vh - 120px);
+  }
+}
