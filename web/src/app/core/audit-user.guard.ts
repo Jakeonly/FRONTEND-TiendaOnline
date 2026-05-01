@@ -1,13 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from './auth/auth.service';
 
-import { AuditContextService } from './audit-context.service';
-
-export const auditUserGuard: CanActivateFn = () => {
-  const audit = inject(AuditContextService);
+export const auditUserGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
   const router = inject(Router);
-  if (audit.hasUsuario()) {
+
+  if (authService.isLoggedIn()) {
     return true;
   }
-  return router.createUrlTree(['/login']);
+
+  router.navigate(['/login']);
+  return false;
 };
