@@ -1,49 +1,48 @@
-<mat-sidenav-container
-  #sidenavShell="matSidenavContainer"
-  class="shell"
-  autosize
->
-  <mat-sidenav
-    mode="side"
-    opened
-    class="nav-rail"
+<mat-sidenav-container #sidenavShell="matSidenavContainer" class="shell" autosize>
+  <!-- Menú Lateral (Sidenav) -->
+  <mat-sidenav 
+    mode="side" 
+    opened 
+    class="nav-rail" 
     [class.collapsed]="sidebarCollapsed()"
   >
+    <!-- Logo y Nombre de la Tienda -->
     <div class="nav-brand">
       <div class="nav-brand__mark">
-        <mat-icon class="nav-brand__icon">hub</mat-icon>
+        <mat-icon class="nav-brand__icon">storefront</mat-icon>
       </div>
       @if (!sidebarCollapsed()) {
         <div class="nav-brand__text">
-          <span class="nav-brand__title">Gestión</span>
-          <span class="nav-brand__sub">API trazabilidad</span>
+          <span class="nav-brand__title">ITM Store</span>
+          <span class="nav-brand__sub">Tienda Online</span>
         </div>
       }
     </div>
+
+    <!-- Lista de Navegación Real -->
     <mat-nav-list class="nav-list">
-      @for (item of nav; track item.path) {
-        <a
-          mat-list-item
-          class="nav-item"
-          [routerLink]="item.path"
+      @for (item of menuItems; track item.path) {
+        <a 
+          mat-list-item 
+          class="nav-item" 
+          [routerLink]="item.path" 
           routerLinkActive="active-link"
           [matTooltip]="sidebarCollapsed() ? item.label : ''"
           matTooltipPosition="right"
-          [matTooltipDisabled]="!sidebarCollapsed()"
         >
           <mat-icon matListItemIcon class="nav-item__icon">{{ item.icon }}</mat-icon>
           <span matListItemTitle class="nav-label">{{ item.label }}</span>
         </a>
       }
     </mat-nav-list>
+
+    <!-- Botón para Colapsar Menú -->
     <div class="nav-footer">
-      <button
-        mat-stroked-button
-        type="button"
-        class="collapse-btn"
+      <button 
+        mat-stroked-button 
+        type="button" 
+        class="collapse-btn" 
         (click)="toggleSidebar()"
-        [matTooltip]="sidebarCollapsed() ? 'Expandir menú' : 'Colapsar menú'"
-        matTooltipPosition="right"
       >
         <mat-icon>{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
         @if (!sidebarCollapsed()) {
@@ -52,34 +51,25 @@
       </button>
     </div>
   </mat-sidenav>
+
+  <!-- Contenido Principal -->
   <mat-sidenav-content class="main-column">
+    <!-- Barra Superior -->
     <mat-toolbar class="top-bar">
-      <button
-        mat-icon-button
-        type="button"
-        class="menu-toggle"
-        (click)="toggleSidebar()"
-        aria-label="Alternar menú lateral"
-      >
+      <button mat-icon-button (click)="toggleSidebar()">
         <mat-icon>menu</mat-icon>
       </button>
-      <span class="title">Panel</span>
+      <span class="title">Panel de Control</span>
       <span class="spacer"></span>
-      <mat-form-field appearance="outline" class="audit-field" subscriptSizing="dynamic">
-        <mat-label>Usuario (auditoría)</mat-label>
-        <mat-select
-          [value]="audit.usuarioId()"
-          (selectionChange)="onUsuarioAudit($event.value)"
-        >
-          @for (u of usuarios(); track u.id_usuario) {
-            <mat-option [value]="u.id_usuario">{{ u.nombre_usuario }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-      <button mat-icon-button type="button" (click)="logout()" aria-label="Cerrar sesión">
+      
+      <!-- Ya no hay selector de auditoría por seguridad (JWT) -->
+      
+      <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
         <mat-icon>logout</mat-icon>
       </button>
     </mat-toolbar>
+
+    <!-- Vista de los Módulos (Productos, Ordenes, etc.) -->
     <main class="content">
       <div class="content-inner">
         <router-outlet />

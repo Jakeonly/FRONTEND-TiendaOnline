@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Agregar Producto a Orden' : 'Editar Detalle' }}</h2>
+<mat-dialog-content class="dialog-body">
+  <form [formGroup]="form" class="grid">
+    
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>ID de la Orden</mat-label>
+      <input matInput formControlName="orden_id" placeholder="UUID de la orden" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>ID del Producto</mat-label>
+      <input matInput formControlName="producto_id" placeholder="UUID del producto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cantidad</mat-label>
+      <input matInput type="number" formControlName="cantidad" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Precio Unitario</mat-label>
+      <input matInput type="number" formControlName="precio_unitario" />
+      <span matTextPrefix>$&nbsp;</span>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">
+    Guardar
+  </button>
+</mat-dialog-actions>

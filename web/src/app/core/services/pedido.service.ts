@@ -1,34 +1,29 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
-
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PedidoCreate, PedidoRead, PedidoUpdate } from '../../models/api.models';
+import { PedidoRead, PedidoCreate, PedidoUpdate, UUID } from '../../models/api.models';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class PedidoService {
-  private readonly base = `${environment.apiUrl}/pedidos`;
-
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly url = `${environment.apiUrl}/pedidos`;
 
   list(): Observable<PedidoRead[]> {
-    const params = new HttpParams().set('skip', 0).set('limit', 500);
-    return this.http.get<PedidoRead[]>(`${this.base}/`, { params });
+    return this.http.get<PedidoRead[]>(this.url);
   }
 
-  get(id: string): Observable<PedidoRead> {
-    return this.http.get<PedidoRead>(`${this.base}/${id}`);
+  create(data: PedidoCreate): Observable<PedidoRead> {
+    return this.http.post<PedidoRead>(this.url, data);
   }
 
-  create(body: PedidoCreate): Observable<PedidoRead> {
-    return this.http.post<PedidoRead>(`${this.base}/`, body);
+  update(id: UUID, data: PedidoUpdate): Observable<PedidoRead> {
+    return this.http.patch<PedidoRead>(`${this.url}/${id}`, data);
   }
 
-  update(id: string, body: PedidoUpdate): Observable<PedidoRead> {
-    return this.http.put<PedidoRead>(`${this.base}/${id}`, body);
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete(`${this.base}/${id}`, { observe: 'response' }).pipe(map(() => undefined));
+  delete(id: UUID): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
   }
 }

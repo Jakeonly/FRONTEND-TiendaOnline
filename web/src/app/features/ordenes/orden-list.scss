@@ -1,0 +1,67 @@
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.table-wrap {
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+}
+
+.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  
+  &.pendiente { 
+    background-color: color-mix(in srgb, var(--mat-sys-error-container) 40%, transparent);
+    color: var(--mat-sys-error);
+  }
+  &.pagado { 
+    background-color: color-mix(in srgb, var(--mat-sys-primary-container) 40%, transparent);
+    color: var(--mat-sys-primary);
+  }
+  &.cancelado { 
+    background-color: var(--mat-sys-outline-variant);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+
+.dialog-body {
+  padding-top: 16px !important;
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    
+    .span-2 {
+      grid-column: span 2;
+    }
+  }
+}

@@ -1,26 +1,29 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 import { ProductoService } from '../../core/services/producto.service';
 import { ProductoRead } from '../../models/api.models';
-import { shortId } from '../../shared/ids';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
 
 @Component({
   selector: 'app-producto-list',
+  standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
+    MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -32,7 +35,7 @@ export class ProductoListComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nombre', 'id_categoria', 'descripcion', 'acciones'];
+  readonly displayedColumns = ['nombre', 'precio', 'stock', 'categoria_id', 'acciones'];
   readonly dataSource = new MatTableDataSource<ProductoRead>([]);
   loading = true;
 
@@ -45,8 +48,6 @@ export class ProductoListComponent implements AfterViewInit {
   constructor() {
     this.reload();
   }
-
-  shortId = shortId;
 
   reload(): void {
     this.loading = true;
@@ -63,16 +64,16 @@ export class ProductoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
-    this.open({ mode: 'create' });
+    this.openDialog({ mode: 'create' });
   }
 
   editar(row: ProductoRead): void {
-    this.open({ mode: 'edit', row });
+    this.openDialog({ mode: 'edit', row });
   }
 
-  private open(data: ProductoDialogData): void {
+  private openDialog(data: ProductoDialogData): void {
     this.dialog
-      .open(ProductoDialogComponent, { width: '520px', data })
+      .open(ProductoDialogComponent, { width: '550px', data })
       .afterClosed()
       .pipe(filter(Boolean))
       .subscribe(() => this.reload());
@@ -80,7 +81,7 @@ export class ProductoListComponent implements AfterViewInit {
 
   eliminar(row: ProductoRead): void {
     if (!confirm(`¿Eliminar producto ${row.nombre}?`)) return;
-    this.svc.delete(row.id_producto).subscribe({
+    this.svc.delete(row.id).subscribe({
       next: () => {
         this.snack.open('Producto eliminado', 'OK', { duration: 3000 });
         this.reload();
@@ -92,7 +93,7 @@ export class ProductoListComponent implements AfterViewInit {
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

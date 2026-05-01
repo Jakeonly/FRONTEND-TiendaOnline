@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 import { DetallePedidoService } from '../../core/services/detalle-pedido.service';
 import { PedidoService } from '../../core/services/pedido.service';
@@ -20,7 +21,9 @@ export interface DetallePedidoDialogData {
 
 @Component({
   selector: 'app-detalle-pedido-dialog',
+  standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -53,6 +56,7 @@ export class DetallePedidoDialogComponent implements OnInit {
   });
 
   ngOnInit(): void {
+
     this.pedidoSvc.list().subscribe({
       next: (rows) => this.pedidos.set(rows),
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
@@ -61,6 +65,7 @@ export class DetallePedidoDialogComponent implements OnInit {
       next: (rows) => this.productos.set(rows),
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+
     if (this.data.mode === 'edit' && this.data.row) {
       const r = this.data.row;
       this.form.patchValue({
@@ -70,6 +75,9 @@ export class DetallePedidoDialogComponent implements OnInit {
         descripcion: r.descripcion ?? '',
         estado: r.estado ?? '',
       });
+  
+      this.form.controls.id_pedido.disable();
+      this.form.controls.id_producto.disable();
     }
   }
 
@@ -83,39 +91,36 @@ export class DetallePedidoDialogComponent implements OnInit {
       return;
     }
     const v = this.form.getRawValue();
+
     if (this.data.mode === 'create') {
-      this.svc
-        .create({
-          id_pedido: v.id_pedido,
-          id_producto: v.id_producto,
-          nombre: v.nombre,
-          descripcion: v.descripcion || null,
-          estado: v.estado || null,
-        })
-        .subscribe({
-          next: () => this.dialogRef.close(true),
-          error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-        });
-      return;
-    }
-    this.svc
-      .update(this.data.row!.id_detalle_pedido, {
+      this.svc.create({
         id_pedido: v.id_pedido,
         id_producto: v.id_producto,
         nombre: v.nombre,
-        descripcion: v.descripcion || null,
-        estado: v.estado || null,
-      })
-      .subscribe({
+        descripcion: v.descripcion || undefined,
+        estado: v.estado || undefined,
+      }).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
+    } else {
+
+      const id = this.data.row!.id_detalle_pedido;
+      this.svc.update(id, {
+        nombre: v.nombre,
+        descripcion: v.descripcion || undefined,
+        estado: v.estado || undefined,
+      }).subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      });
+    }
   }
 
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

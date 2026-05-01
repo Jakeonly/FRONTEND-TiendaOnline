@@ -1,37 +1,44 @@
-<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo detalle' : 'Editar detalle' }}</h2>
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo Detalle' : 'Editar Detalle' }}</h2>
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
+    
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Pedido</mat-label>
+      <mat-label>Seleccionar Pedido</mat-label>
       <mat-select formControlName="id_pedido">
         @for (p of pedidos(); track p.id_pedido) {
-          <mat-option [value]="p.id_pedido">{{ p.nombre }} ({{ p.id_pedido.slice(0, 8) }}…)</mat-option>
+          <mat-option [value]="p.id_pedido">Pedido #{{ p.id_pedido | slice:0:8 }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Producto</mat-label>
+      <mat-label>Seleccionar Producto</mat-label>
       <mat-select formControlName="id_producto">
-        @for (p of productos(); track p.id_producto) {
-          <mat-option [value]="p.id_producto">{{ p.nombre }}</mat-option>
+        @for (prod of productos(); track prod.id) {
+          <mat-option [value]="prod.id">{{ prod.nombre }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Nombre línea</mat-label>
-      <input matInput formControlName="nombre" />
+      <mat-label>Nombre / Etiqueta</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Ítem Principal" />
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Descripción</mat-label>
+      <mat-label>Descripción Adicional</mat-label>
       <textarea matInput rows="2" formControlName="descripcion"></textarea>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Estado</mat-label>
-      <input matInput formControlName="estado" />
+      <mat-label>Estado del Ítem</mat-label>
+      <input matInput formControlName="estado" placeholder="Ej: Activo, Pendiente..." />
     </mat-form-field>
+
   </form>
 </mat-dialog-content>
+
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" type="button" (click)="save()">Guardar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">Guardar</button>
 </mat-dialog-actions>

@@ -1,0 +1,61 @@
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  h1 {
+    margin: 0;
+    font: var(--mat-sys-title-large);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+}
+
+/* Contenedor del Spinner de carga */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px;
+}
+
+/* Envoltura de la tabla con elevación Material */
+.table-wrap {
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 15%, transparent);
+}
+
+/* Columna de botones de acción */
+.actions {
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 16px !important;
+
+  button {
+    margin-left: 4px;
+  }
+}
+
+/* Estilos específicos para el diálogo inyectados vía .dialog-body */
+.dialog-body {
+  padding-top: 20px !important;
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+
+    .span-2 {
+      grid-column: 1;
+    }
+  }
+}
+
+/* Ajuste para que las filas cambien de color al pasar el mouse */
+.mat-mdc-row:hover {
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 4%, transparent);
+}

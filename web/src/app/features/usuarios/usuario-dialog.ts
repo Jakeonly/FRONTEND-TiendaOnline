@@ -3,10 +3,11 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 
 import { UsuarioService } from '../../core/services/usuario.service';
 import { UsuarioRead, UsuarioUpdate } from '../../models/api.models';
@@ -18,20 +19,22 @@ export interface UsuarioDialogData {
 
 @Component({
   selector: 'app-usuario-dialog',
+  standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatCheckboxModule,
+    MatSlideToggleModule,
     MatSnackBarModule,
   ],
   templateUrl: './usuario-dialog.html',
 })
 export class UsuarioDialogComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly usuarioService = inject(UsuarioService);
+  private readonly svc = inject(UsuarioService);
   private readonly dialogRef = inject(MatDialogRef<UsuarioDialogComponent, boolean>);
   private readonly snack = inject(MatSnackBar);
 
@@ -39,11 +42,11 @@ export class UsuarioDialogComponent {
 
   readonly form = this.fb.nonNullable.group({
     nombre_completo: ['', Validators.required],
-    nombre_usuario: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    clave: [''],
-    rol: ['', Validators.required],
+    contraseña: ['', Validators.minLength(6)],
     telefono: [''],
+    direccion: [''],
+    es_admin: [false],
     activo: [true],
   });
 
@@ -52,22 +55,22 @@ export class UsuarioDialogComponent {
       const r = this.data.row;
       this.form.patchValue({
         nombre_completo: r.nombre_completo,
-        nombre_usuario: r.nombre_usuario,
         email: r.email,
-        clave: '',
-        rol: r.rol,
         telefono: r.telefono ?? '',
+        direccion: r.direccion ?? '',
+        es_admin: r.es_admin,
         activo: r.activo,
       });
-    }
-    if (this.data.mode === 'create') {
-      this.form.controls.clave.setValidators([Validators.required, Validators.minLength(4)]);
+      // En edición la contraseña es opcional, quitamos requerimiento si existe
+      this.form.controls.contraseña.clearValidators();
+      this.form.controls.contraseña.updateValueAndValidity();
+    } else {
+      // En creación la contraseña sí es obligatoria
+      this.form.controls.contraseña.setValidators([Validators.required, Validators.minLength(6)]);
     }
   }
 
-  cancel(): void {
-    this.dialogRef.close(false);
-  }
+  cancel(): void { this.dialogRef.close(false); }
 
   save(): void {
     if (this.form.invalid) {
@@ -75,45 +78,42 @@ export class UsuarioDialogComponent {
       return;
     }
     const v = this.form.getRawValue();
+
     if (this.data.mode === 'create') {
-      this.usuarioService
-        .create({
-          nombre_completo: v.nombre_completo,
-          nombre_usuario: v.nombre_usuario,
-          email: v.email,
-          clave: v.clave,
-          rol: v.rol,
-          telefono: v.telefono || null,
-          activo: v.activo,
-        })
-        .subscribe({
-          next: () => this.dialogRef.close(true),
-          error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-        });
-      return;
+      this.svc.create({
+        nombre_completo: v.nombre_completo,
+        email: v.email,
+        contraseña: v.contraseña,
+        telefono: v.telefono || undefined,
+        direccion: v.direccion || undefined,
+        es_admin: v.es_admin,
+      }).subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      });
+    } else {
+      const id = this.data.row!.id;
+      const body: UsuarioUpdate = {
+        nombre_completo: v.nombre_completo,
+        email: v.email,
+        contraseña: v.contraseña || undefined,
+        telefono: v.telefono || undefined,
+        direccion: v.direccion || undefined,
+        es_admin: v.es_admin,
+        activo: v.activo,
+      };
+
+      this.svc.update(id, body).subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      });
     }
-    const id = this.data.row!.id_usuario;
-    const body: UsuarioUpdate = {
-      nombre_completo: v.nombre_completo,
-      nombre_usuario: v.nombre_usuario,
-      email: v.email,
-      rol: v.rol,
-      telefono: v.telefono || null,
-      activo: v.activo,
-    };
-    if (v.clave?.trim()) {
-      body.clave = v.clave;
-    }
-    this.usuarioService.update(id, body).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-    });
   }
 
   private msg(err: HttpErrorResponse): string {
     const d = err.error?.detail;
     if (typeof d === 'string') return d;
-    if (Array.isArray(d)) return d.map((x) => x.msg ?? JSON.stringify(x)).join('; ');
+    if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
   }
 }

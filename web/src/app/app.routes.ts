@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { auditUserGuard } from './core/audit-user.guard';
 
 export const routes: Routes = [
@@ -13,7 +12,8 @@ export const routes: Routes = [
     canActivate: [auditUserGuard],
     loadComponent: () => import('./features/shell/main-layout').then((m) => m.MainLayoutComponent),
     children: [
-      { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
+
+      { path: '', redirectTo: 'productos', pathMatch: 'full' },
       {
         path: 'usuarios',
         loadComponent: () =>
@@ -29,22 +29,42 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/productos/producto-list').then((m) => m.ProductoListComponent),
       },
+
       {
-        path: 'pedidos',
+        path: 'ordenes', 
         loadComponent: () =>
-          import('./features/pedidos/pedido-list').then((m) => m.PedidoListComponent),
+          import('./features/ordenes/orden-list').then((m) => m.OrdenListComponent),
       },
       {
-        path: 'detalles-pedido',
+        path: 'detalle-orden', 
         loadComponent: () =>
-          import('./features/detalles-pedido/detalle-pedido-list').then(
-            (m) => m.DetallePedidoListComponent,
+          import('./features/detalle-orden/detalle-orden-list').then(
+            (m) => m.DetalleOrdenListComponent,
           ),
       },
+      {
+        path: 'carritos', 
+        loadComponent: () =>
+          import('./features/carritos/carrito-list').then((m) => m.CarritoListComponent),
+      },
+      {
+        path: 'detalle-carrito', 
+        loadComponent: () =>
+          import('./features/detalle-carrito/detalle-carrito-list').then(
+            (m) => m.DetalleCarritoListComponent,
+          ),
+      },
+      {
+        path: 'descuentos', 
+        loadComponent: () =>
+          import('./features/descuentos/descuento-list').then((m) => m.DescuentoListComponent),
+      },
+
       {
         path: 'pagos',
         loadComponent: () => import('./features/pagos/pago-list').then((m) => m.PagoListComponent),
       },
+      
     ],
   },
   { path: '**', redirectTo: 'login' },

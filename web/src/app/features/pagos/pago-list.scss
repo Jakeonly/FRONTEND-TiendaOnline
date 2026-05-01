@@ -3,26 +3,85 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0;
+    font: var(--mat-sys-title-large);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
 }
 
-.page-head h1 {
-  margin: 0;
-  font: var(--mat-sys-title-large);
-}
 
 .loading {
   display: flex;
   justify-content: center;
-  padding: 48px;
+  align-items: center;
+  padding: 60px;
 }
 
+
 .table-wrap {
-  overflow: auto;
+  overflow: hidden;
   border-radius: 12px;
+  background: var(--mat-sys-surface);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 10%, transparent);
 }
+
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  
+  &.pendiente { 
+    background-color: #fff3e0; 
+    color: #ef6c00; 
+  }
+  &.completado { 
+    background-color: #e8f5e9; 
+    color: #2e7d32; 
+  }
+  &.fallido { 
+    background-color: #ffebee; 
+    color: #c62828; 
+  }
+}
+
 
 .actions {
   white-space: nowrap;
   text-align: right;
+  padding-right: 16px !important;
+
+  button {
+    margin-left: 4px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+/* Estructura del formulario en el Diálogo */
+.dialog-body {
+  padding-top: 16px !important;
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 16px;
+
+    .span-2 {
+      grid-column: span 2; 
+    }
+  }
+}
+
+
+.mat-mdc-row:hover {
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
+  transition: background-color 0.2s ease;
 }

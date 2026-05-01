@@ -1,0 +1,44 @@
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.table-wrap {
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+}
+
+.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.dialog-body {
+  padding-top: 16px !important;
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    
+    .span-2 {
+      grid-column: span 2;
+    }
+  }
+}

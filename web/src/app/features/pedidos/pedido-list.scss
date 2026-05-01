@@ -4,11 +4,12 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
-}
 
-.page-head h1 {
-  margin: 0;
-  font: var(--mat-sys-title-large);
+  h1 {
+    margin: 0;
+    font: var(--mat-sys-title-large);
+    font-weight: 700;
+  }
 }
 
 .loading {
@@ -20,9 +21,33 @@
 .table-wrap {
   overflow: auto;
   border-radius: 12px;
+  background: var(--mat-sys-surface);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  
+  &.procesando { background: #fff3e0; color: #e65100; }
+  &.enviado { background: #e3f2fd; color: #1565c0; }
+  &.entregado { background: #e8f5e9; color: #2e7d32; }
+  &.cancelado { background: #ffebee; color: #c62828; }
 }
 
 .actions {
   white-space: nowrap;
   text-align: right;
+}
+
+.dialog-body {
+  padding-top: 16px !important;
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    .span-2 { grid-column: span 2; }
+  }
 }

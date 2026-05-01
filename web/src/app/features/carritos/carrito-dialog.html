@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo carrito' : 'Editar carrito' }}</h2>
+
+<mat-dialog-content class="dialog-body">
+  <form [formGroup]="form" class="grid">
+    
+    <!-- Usuario ID -->
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>ID del Usuario</mat-label>
+      <input matInput formControlName="usuario_id" placeholder="Ingrese el UUID del usuario" />
+      <mat-icon matSuffix>person</mat-icon>
+      
+      <!-- Mensaje de error dinámico -->
+      @if (form.controls.usuario_id.hasError('required')) {
+        <mat-error>El ID del usuario es <strong>obligatorio</strong></mat-error>
+      }
+      <mat-hint>Vincule este carrito a un usuario existente</mat-hint>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">
+    Guardar
+  </button>
+</mat-dialog-actions>

@@ -1,34 +1,33 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
-
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ProductoCreate, ProductoRead, ProductoUpdate } from '../../models/api.models';
+import { ProductoRead, ProductoCreate, ProductoUpdate, UUID } from '../../models/api.models';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ProductoService {
-  private readonly base = `${environment.apiUrl}/productos`;
-
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly url = `${environment.apiUrl}/productos`;
 
   list(): Observable<ProductoRead[]> {
-    const params = new HttpParams().set('skip', 0).set('limit', 500);
-    return this.http.get<ProductoRead[]>(`${this.base}/`, { params });
+    return this.http.get<ProductoRead[]>(this.url);
   }
 
-  get(id: string): Observable<ProductoRead> {
-    return this.http.get<ProductoRead>(`${this.base}/${id}`);
+  get(id: UUID): Observable<ProductoRead> {
+    return this.http.get<ProductoRead>(`${this.url}/${id}`);
   }
 
-  create(body: ProductoCreate): Observable<ProductoRead> {
-    return this.http.post<ProductoRead>(`${this.base}/`, body);
+  create(data: ProductoCreate): Observable<ProductoRead> {
+    return this.http.post<ProductoRead>(this.url, data);
   }
 
-  update(id: string, body: ProductoUpdate): Observable<ProductoRead> {
-    return this.http.put<ProductoRead>(`${this.base}/${id}`, body);
+  update(id: UUID, data: ProductoUpdate): Observable<ProductoRead> {
+    return this.http.patch<ProductoRead>(`${this.url}/${id}`, data);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete(`${this.base}/${id}`, { observe: 'response' }).pipe(map(() => undefined));
+  delete(id: UUID): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
   }
 }
