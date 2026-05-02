@@ -32,13 +32,15 @@ export class MainLayoutComponent {
   readonly sidebarCollapsed = signal(false);
 
   readonly menuItems = [
-    { path: 'productos', label: 'Productos', icon: 'inventory_2' },
-    { path: 'categorias', label: 'Categorías', icon: 'category' },
-    { path: 'carritos', label: 'Mi Carrito', icon: 'shopping_cart' },
-    { path: 'ordenes', label: 'Mis Órdenes', icon: 'receipt_long' },
-    { path: 'descuentos', label: 'Cupones', icon: 'sell' },
-    { path: 'usuarios', label: 'Usuarios', icon: 'group' },
-    { path: 'pagos', label: 'Pagos', icon: 'payments' },
+  { path: 'productos', label: 'Productos', icon: 'inventory_2' },
+  { path: 'categorias', label: 'Categorías', icon: 'category' },
+  { path: 'carritos', label: 'Mi Carrito', icon: 'shopping_cart' },
+  { path: 'detalle-carrito', label: 'Detalles Carrito', icon: 'list_alt' }, // Nueva
+  { path: 'ordenes', label: 'Mis Órdenes', icon: 'receipt_long' },
+  { path: 'detalle-orden', label: 'Detalles Orden', icon: 'Fact_check' },   // Nueva
+  { path: 'descuentos', label: 'Cupones', icon: 'sell' },
+  { path: 'usuarios', label: 'Usuarios', icon: 'group' },
+  { path: 'pagos', label: 'Pagos', icon: 'payments' },
   ];
 
   logout(): void {
