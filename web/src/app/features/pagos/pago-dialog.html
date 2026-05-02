@@ -1,13 +1,11 @@
 <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo Pago' : 'Editar Pago' }}</h2>
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
-    
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Pedido Asociado</mat-label>
-      <mat-select formControlName="id_pedido">
-        @for (p of pedidos(); track p.id_pedido) {
-          <mat-option [value]="p.id_pedido">Pedido #{{ p.id_pedido | slice:0:8 }} - Total: {{ p.total_pedido | currency }}</mat-option>
-        }
+
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
+      <mat-label>Orden Asociada</mat-label>
+      <mat-select formControlName="orden_id">
+        <mat-option *ngFor="let o of ordenes()" [value]="o.id">Orden #{{ o.id | slice:0:8 }} - Total: {{ o.total | currency }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -23,7 +21,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Monto</mat-label>
-      <input matInput type="number" formControlName="monto" />
+      <input matInput type="number" min="0" step="0.01" formControlName="monto" />
       <span matTextPrefix>$&nbsp;</span>
     </mat-form-field>
 

@@ -28,7 +28,7 @@ export class DescuentoService {
   }
 
   update(id: UUID, data: DescuentoUpdate): Observable<DescuentoRead> {
-    return this.http.patch<DescuentoRead>(`${this.url}/${id}`, data);
+    return this.http.put<DescuentoRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

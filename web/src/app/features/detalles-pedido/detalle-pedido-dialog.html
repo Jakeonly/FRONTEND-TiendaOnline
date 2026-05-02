@@ -2,7 +2,7 @@
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
     
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Seleccionar Pedido</mat-label>
       <mat-select formControlName="id_pedido">
         @for (p of pedidos(); track p.id_pedido) {
@@ -11,7 +11,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Seleccionar Producto</mat-label>
       <mat-select formControlName="id_producto">
         @for (prod of productos(); track prod.id) {
@@ -20,12 +20,12 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Nombre / Etiqueta</mat-label>
       <input matInput formControlName="nombre" placeholder="Ej: Ítem Principal" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Descripción Adicional</mat-label>
       <textarea matInput rows="2" formControlName="descripcion"></textarea>
     </mat-form-field>

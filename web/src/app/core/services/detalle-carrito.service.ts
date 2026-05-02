@@ -25,7 +25,7 @@ export class DetalleCarritoService {
   }
 
   update(id: UUID, data: DetalleCarritoUpdate): Observable<DetalleCarritoRead> {
-    return this.http.patch<DetalleCarritoRead>(`${this.url}/${id}`, data);
+    return this.http.put<DetalleCarritoRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

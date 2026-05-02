@@ -2,7 +2,7 @@
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
     
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Usuario que solicita</mat-label>
       <mat-select formControlName="id_usuario">
         @for (u of usuarios(); track u.id) {

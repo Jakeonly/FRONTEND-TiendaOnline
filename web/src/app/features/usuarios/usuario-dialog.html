@@ -2,27 +2,27 @@
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
     
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Nombre Completo</mat-label>
       <input matInput formControlName="nombre_completo" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Correo Electrónico</mat-label>
       <input matInput type="email" formControlName="email" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Contraseña</mat-label>
       <input matInput type="password" formControlName="contraseña" [placeholder]="data.mode === 'edit' ? 'Dejar en blanco para no cambiar' : ''" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Teléfono</mat-label>
       <input matInput formControlName="telefono" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Dirección</mat-label>
       <input matInput formControlName="direccion" />
     </mat-form-field>

@@ -23,7 +23,7 @@
       </ng-container>
       <ng-container matColumnDef="monto">
         <th mat-header-cell *matHeaderCellDef>Monto</th>
-        <td mat-cell *matCellDef="let r">{{ r.monto | currency }}</td>
+        <td mat-cell *matCellDef="let r">{{ r.monto | currency:'USD':'symbol':'1.0-2' }}</td>
       </ng-container>
       <ng-container matColumnDef="metodo">
         <th mat-header-cell *matHeaderCellDef>Método</th>
@@ -36,6 +36,9 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let r" class="actions">
+          <button mat-icon-button type="button" (click)="editar(r)" aria-label="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
           <button mat-icon-button type="button" (click)="eliminar(r)" aria-label="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>

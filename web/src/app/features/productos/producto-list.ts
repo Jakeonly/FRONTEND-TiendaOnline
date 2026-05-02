@@ -10,10 +10,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
+import { CategoriaService } from '../../core/services/categoria.service';
 import { ProductoService } from '../../core/services/producto.service';
-import { ProductoRead } from '../../models/api.models';
+import { CategoriaRead, ProductoRead } from '../../models/api.models';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
-import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-producto-list',
@@ -32,13 +32,14 @@ import { shortId } from '../../shared/ids';
   styleUrl: './producto-list.scss',
 })
 export class ProductoListComponent implements AfterViewInit {
+  private readonly categoriaSvc = inject(CategoriaService);
   private readonly svc = inject(ProductoService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
-  readonly shortId = shortId;
 
   readonly displayedColumns = ['nombre', 'descripcion', 'precio', 'stock', 'categoria_id', 'acciones'];
   readonly dataSource = new MatTableDataSource<ProductoRead>([]);
+  readonly categoriasPorId = new Map<string, string>();
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -48,7 +49,25 @@ export class ProductoListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.loadCategorias();
     this.reload();
+  }
+
+  categoriaNombre(id: string | null | undefined): string {
+    if (!id) return '—';
+    return this.categoriasPorId.get(id) ?? '—';
+  }
+
+  private loadCategorias(): void {
+    this.categoriaSvc.list().subscribe({
+      next: (rows: CategoriaRead[]) => {
+        this.categoriasPorId.clear();
+        rows.forEach((row) => this.categoriasPorId.set(row.id, row.nombre));
+      },
+      error: (err: HttpErrorResponse) => {
+        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+      },
+    });
   }
 
   reload(): void {
