@@ -35,7 +35,7 @@ export class CategoriaListComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nombre', 'descripcion', 'estado', 'acciones'];
+  readonly displayedColumns = ['nombre', 'descripcion', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CategoriaRead>([]);
   loading = true;
 

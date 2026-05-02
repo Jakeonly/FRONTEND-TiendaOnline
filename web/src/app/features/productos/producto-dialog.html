@@ -1,31 +1,35 @@
 <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo producto' : 'Editar producto' }}</h2>
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Nombre</mat-label>
       <input matInput formControlName="nombre" />
     </mat-form-field>
     
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Descripción</mat-label>
       <textarea matInput rows="2" formControlName="descripcion"></textarea>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Precio</mat-label>
-      <input matInput type="number" formControlName="precio" />
+      <input matInput type="text" inputmode="decimal" formControlName="precio" />
       <span matTextPrefix>$&nbsp;</span>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Stock</mat-label>
-      <input matInput type="number" formControlName="stock" />
+      <input matInput type="number" min="0" step="1" formControlName="stock" />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="span-2">
-      <mat-label>ID Categoría</mat-label>
-      <input matInput formControlName="categoria_id" />
-      <mat-hint>Ingrese el UUID de la categoría</mat-hint>
+      <mat-label>Categoría</mat-label>
+      <mat-select formControlName="categoria_id">
+        @for (categoria of categorias; track categoria.id) {
+          <mat-option [value]="categoria.id">{{ categoria.nombre }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Se guarda el id de la categoría seleccionada</mat-hint>
     </mat-form-field>
   </form>
 </mat-dialog-content>

@@ -24,7 +24,7 @@ export class PagoService {
   }
 
   update(id: UUID, data: PagoUpdate): Observable<PagoRead> {
-    return this.http.patch<PagoRead>(`${this.url}/${id}`, data);
+    return this.http.put<PagoRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

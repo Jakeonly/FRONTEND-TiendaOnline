@@ -1,12 +1,12 @@
 <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva categoría' : 'Editar categoría' }}</h2>
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Nombre</mat-label>
       <input matInput formControlName="nombre" placeholder="Nombre de la categoría" />
     </mat-form-field>
     
-    <mat-form-field appearance="outline" class="span-2">
+    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Descripción</mat-label>
       <textarea matInput rows="3" formControlName="descripcion" placeholder="Opcional..."></textarea>
     </mat-form-field>

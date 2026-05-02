@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -10,6 +11,7 @@ import { CommonModule } from '@angular/common';
 
 import { PagoService } from '../../core/services/pago.service';
 import { shortId } from '../../shared/ids';
+import { PagoDialogComponent } from './pago-dialog';
 
 @Component({
   selector: 'app-pago-list',
@@ -28,6 +30,7 @@ import { shortId } from '../../shared/ids';
 })
 export class PagoListComponent implements AfterViewInit {
   private readonly svc = inject(PagoService);
+  private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
 
@@ -58,11 +61,20 @@ export class PagoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
-    this.snack.open('El alta de pagos no está disponible en esta vista', 'Cerrar', { duration: 3000 });
+    this.openDialog({ mode: 'create' });
   }
 
   editar(row: any): void {
-    void row;
+    this.openDialog({ mode: 'edit', row });
+  }
+
+  private openDialog(data: { mode: 'create' | 'edit'; row?: any }): void {
+    this.dialog
+      .open(PagoDialogComponent, { width: '520px', data })
+      .afterClosed()
+      .subscribe((ok) => {
+        if (ok) this.reload();
+      });
   }
 
   eliminar(row: any): void {

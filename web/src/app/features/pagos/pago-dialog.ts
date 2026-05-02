@@ -10,12 +10,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 
 import { PagoService } from '../../core/services/pago.service';
-import { PedidoService } from '../../core/services/pedido.service';
-import { PagoRead, PedidoRead, PagoUpdate } from '../../models/api.models';
+import { OrdenService } from '../../core/services/orden.service';
+import { PagoRead, OrdenRead, PagoUpdate } from '../../models/api.models';
 
 export interface PagoDialogData {
   mode: 'create' | 'edit';
-  row?: PagoRead;
+  row?: any;
 }
 
 @Component({
@@ -36,33 +36,33 @@ export interface PagoDialogData {
 export class PagoDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(PagoService);
-  private readonly pedidoSvc = inject(PedidoService);
+  private readonly ordenSvc = inject(OrdenService);
   private readonly dialogRef = inject(MatDialogRef<PagoDialogComponent, boolean>);
   private readonly snack = inject(MatSnackBar);
 
   readonly data = inject<PagoDialogData>(MAT_DIALOG_DATA);
-  readonly pedidos = signal<PedidoRead[]>([]);
+  readonly ordenes = signal<OrdenRead[]>([]);
 
   readonly form = this.fb.nonNullable.group({
-    id_pedido: ['', Validators.required],
+    orden_id: ['', Validators.required],
     nombre: ['', Validators.required],
     descripcion: [''],
-    monto: [0, [Validators.required, Validators.min(1)]],
+    monto: [0, [Validators.required, Validators.min(0)]],
     referencia: ['', Validators.required],
     tipo_pago: ['', Validators.required],
     estado: ['pendiente'],
   });
 
   ngOnInit(): void {
-    this.pedidoSvc.list().subscribe({
-      next: (rows) => this.pedidos.set(rows),
+    this.ordenSvc.list().subscribe({
+      next: (rows) => this.ordenes.set(rows),
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
 
     if (this.data.mode === 'edit' && this.data.row) {
-      const r = this.data.row;
+      const r: any = this.data.row;
       this.form.patchValue({
-        id_pedido: r.id_pedido,
+        orden_id: r.orden_id ?? r.id_pedido ?? '',
         nombre: r.nombre,
         descripcion: r.descripcion ?? '',
         monto: r.monto,
@@ -70,7 +70,7 @@ export class PagoDialogComponent implements OnInit {
         tipo_pago: r.tipo_pago,
         estado: r.estado,
       });
-      this.form.controls.id_pedido.disable();
+      this.form.controls.orden_id.disable();
     }
   }
 
@@ -85,32 +85,30 @@ export class PagoDialogComponent implements OnInit {
     const v = this.form.getRawValue();
 
     if (this.data.mode === 'create') {
-      this.svc.create({
-        id_pedido: v.id_pedido,
+      const body: any = {
+        orden_id: v.orden_id,
         nombre: v.nombre,
         descripcion: v.descripcion || undefined,
         monto: v.monto,
         referencia: v.referencia,
         tipo_pago: v.tipo_pago,
-        estado: v.estado
-      }).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-      });
-    } else {
-      const id = this.data.row!.id_pago;
-      const body: PagoUpdate = {
-        nombre: v.nombre,
-        descripcion: v.descripcion || undefined,
         estado: v.estado,
-        referencia: v.referencia
       };
 
-      this.svc.update(id, body).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
-      });
+      this.svc.create(body).subscribe({ next: () => this.dialogRef.close(true), error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }) });
+      return;
     }
+
+    const rowAny: any = this.data.row;
+    const id = rowAny?.id ?? rowAny?.id_pago;
+    const body: PagoUpdate = {
+      nombre: v.nombre,
+      descripcion: v.descripcion || undefined,
+      estado: v.estado,
+      referencia: v.referencia,
+    };
+
+    this.svc.update(id, body).subscribe({ next: () => this.dialogRef.close(true), error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }) });
   }
 
   private msg(err: HttpErrorResponse): string {

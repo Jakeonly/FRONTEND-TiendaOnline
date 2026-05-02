@@ -24,7 +24,7 @@ export class CategoriaService {
   }
 
   update(id: UUID, data: CategoriaUpdate): Observable<CategoriaRead> {
-    return this.http.patch<CategoriaRead>(`${this.url}/${id}`, data);
+    return this.http.put<CategoriaRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

@@ -24,7 +24,7 @@ export class DetalleOrdenService {
   }
 
   update(id: UUID, data: DetalleOrdenUpdate): Observable<DetalleOrdenRead> {
-    return this.http.patch<DetalleOrdenRead>(`${this.url}/${id}`, data);
+    return this.http.put<DetalleOrdenRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

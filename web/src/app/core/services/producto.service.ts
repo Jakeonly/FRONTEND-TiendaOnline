@@ -24,7 +24,7 @@ export class ProductoService {
   }
 
   update(id: UUID, data: ProductoUpdate): Observable<ProductoRead> {
-    return this.http.patch<ProductoRead>(`${this.url}/${id}`, data);
+    return this.http.put<ProductoRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {

@@ -24,7 +24,7 @@ export class UsuarioService {
   }
 
   update(id: UUID, data: UsuarioUpdate): Observable<UsuarioRead> {
-    return this.http.patch<UsuarioRead>(`${this.url}/${id}`, data);
+    return this.http.put<UsuarioRead>(`${this.url}/${id}`, data);
   }
 
   delete(id: UUID): Observable<void> {
