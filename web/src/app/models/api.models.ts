@@ -96,6 +96,7 @@ export interface OrdenCreate {
 export interface OrdenUpdate {
   estado?: string;
   total?: number;
+  descuento_id?: UUID | null;
 }
 
 // --- 5. DETALLE ORDEN ---
@@ -186,32 +187,27 @@ export interface DescuentoUpdate {
 
 // --- 9. PAGOS ---
 export interface PagoRead {
-  id_pago: UUID;     
-  id_pedido: UUID;     
-  nombre: string;       
-  descripcion?: string;   
+  id: UUID;
   monto: number;
-  referencia: string;     
-  tipo_pago: string;       
-  estado: string;         
+  metodo: string;
+  estado: string;
   fecha_creacion: string;
+  fecha_edicion?: string;
+  orden_id: UUID;
 }
 
 export interface PagoCreate {
-  id_pedido: UUID;
-  nombre: string;
-  descripcion?: string;
   monto: number;
-  referencia: string;
-  tipo_pago: string;
+  metodo: string;
   estado?: string;
+  orden_id: UUID;
 }
 
 export interface PagoUpdate {
-  nombre?: string;
-  descripcion?: string;
+  monto?: number;
+  metodo?: string;
   estado?: string;
-  referencia?: string;
+  orden_id?: UUID;
 }
 
 // --- 10. PEDIDOS---

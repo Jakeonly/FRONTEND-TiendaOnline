@@ -7,6 +7,8 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { CommonModule } from '@angular/common';
 
 import { PagoService } from '../../core/services/pago.service';
@@ -20,8 +22,10 @@ import { PagoDialogComponent } from './pago-dialog';
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -34,17 +38,55 @@ export class PagoListComponent implements AfterViewInit {
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
 
-  readonly displayedColumns = ['id', 'orden_id', 'monto', 'metodo', 'estado', 'acciones'];
+  readonly displayedColumns = ['id', 'orden_id', 'monto', 'metodo', 'estado', 'fecha', 'acciones'];
   readonly dataSource = new MatTableDataSource<any>([]);
   loading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private paginatorRef?: MatPaginator;
+  private sortRef?: MatSort;
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  @ViewChild(MatPaginator)
+  set paginator(value: MatPaginator | undefined) {
+    this.paginatorRef = value;
+    this.attachTableHelpers();
   }
 
-  constructor() { this.reload(); }
+  @ViewChild(MatSort)
+  set sort(value: MatSort | undefined) {
+    this.sortRef = value;
+    this.attachTableHelpers();
+  }
+
+  constructor() {
+    // Configure sorting data accessor BEFORE any data is loaded
+    this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
+      const value = row[columnName];
+      if (typeof value === 'string') return value.toLowerCase();
+      if (typeof value === 'number') return value;
+      if (columnName === 'fecha') {
+        return new Date(row.fecha_edicion || row.fecha_creacion).getTime();
+      }
+      return value;
+    };
+    this.reload();
+  }
+
+  ngAfterViewInit(): void {
+    this.attachTableHelpers();
+  }
+
+  onSortChange(): void {
+    this.attachTableHelpers();
+  }
+
+  private attachTableHelpers(): void {
+    if (this.paginatorRef) {
+      this.dataSource.paginator = this.paginatorRef;
+    }
+    if (this.sortRef) {
+      this.dataSource.sort = this.sortRef;
+    }
+  }
 
   reload(): void {
     this.loading = true;
@@ -66,6 +108,36 @@ export class PagoListComponent implements AfterViewInit {
 
   editar(row: any): void {
     this.openDialog({ mode: 'edit', row });
+  }
+
+  async copiarId(row: any): Promise<void> {
+    await this.copiarTexto(shortId(row.id), 'ID copiado al portapapeles', 'No se pudo copiar el ID');
+  }
+
+  async copiarOrden(row: any): Promise<void> {
+    await this.copiarTexto(shortId(row.orden_id), 'Orden copiada al portapapeles', 'No se pudo copiar la orden');
+  }
+
+  private async copiarTexto(texto: string, okMessage: string, errorMessage: string): Promise<void> {
+    if (!texto) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(texto);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      this.snack.open(okMessage, 'OK', { duration: 2500 });
+    } catch {
+      this.snack.open(errorMessage, 'Cerrar', { duration: 4000 });
+    }
   }
 
   private openDialog(data: { mode: 'create' | 'edit'; row?: any }): void {

@@ -5,18 +5,8 @@
     <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Orden Asociada</mat-label>
       <mat-select formControlName="orden_id">
-        <mat-option *ngFor="let o of ordenes()" [value]="o.id">Orden #{{ o.id | slice:0:8 }} - Total: {{ o.total | currency }}</mat-option>
+        <mat-option *ngFor="let o of ordenes()" [value]="o.id">Orden #{{ o.id | slice:0:8 }} - Total: {{ o.total | currency:'USD':'symbol':'1.0-2' }}</mat-option>
       </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Nombre del Pago / Concepto</mat-label>
-      <input matInput formControlName="nombre" placeholder="Ej: Pago Mensualidad" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="span-2">
-      <mat-label>Descripción</mat-label>
-      <textarea matInput rows="2" formControlName="descripcion"></textarea>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -26,22 +16,22 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Estado</mat-label>
-      <mat-select formControlName="estado">
-        <mat-option value="pendiente">Pendiente</mat-option>
-        <mat-option value="completado">Completado</mat-option>
-        <mat-option value="fallido">Fallido</mat-option>
+      <mat-label>Método de Pago</mat-label>
+      <mat-select formControlName="metodo">
+        <mat-option value="Efectivo">Efectivo</mat-option>
+        <mat-option value="Debito">Débito</mat-option>
+        <mat-option value="Credito">Crédito</mat-option>
+        <mat-option value="Transferencia">Transferencia</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Referencia de Transacción</mat-label>
-      <input matInput formControlName="referencia" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Tipo de Pago</mat-label>
-      <input matInput formControlName="tipo_pago" placeholder="Ej: PSE, Tarjeta" />
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado">
+        <mat-option value="pendiente">Pendiente</mat-option>
+        <mat-option value="pagada">Pagada</mat-option>
+        <mat-option value="cancelada">Cancelada</mat-option>
+      </mat-select>
     </mat-form-field>
 
   </form>

@@ -2,17 +2,20 @@
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
     
-    <!-- Usuario ID (UUID) -->
+    <!-- Usuario -->
     <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
-      <mat-label>ID del Usuario (Comprador)</mat-label>
-      <input matInput formControlName="usuario_id" placeholder="Ingrese el UUID del usuario" />
-      <mat-icon matSuffix>person</mat-icon>
+      <mat-label>Usuario comprador</mat-label>
+      <mat-select formControlName="usuario_id">
+        <mat-option *ngFor="let usuario of usuarios" [value]="usuario.id">
+          {{ usuario.nombre_completo }}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
 
     <!-- Total de la Orden -->
     <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Total</mat-label>
-      <input matInput type="number" formControlName="total" />
+      <input matInput type="number" min="0" formControlName="total" />
       <span matTextPrefix>$&nbsp;</span>
     </mat-form-field>
 
@@ -26,11 +29,12 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- Descuento ID (Opcional) -->
+    <!-- Cupón por código exacto -->
     <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
-      <mat-label>ID de Descuento (Opcional)</mat-label>
-      <input matInput formControlName="descuento_id" placeholder="UUID del cupón si aplica" />
-      <mat-hint>Si no hay descuento, dejar vacío</mat-hint>
+      <mat-label>Código del cupón (Opcional)</mat-label>
+      <input matInput formControlName="descuento_codigo" placeholder="Ingrese el código exacto del cupón" />
+      <button mat-button matSuffix type="button" (click)="verificarCupon()">Verificar</button>
+      <mat-hint>Si no hay cupón, dejar vacío</mat-hint>
     </mat-form-field>
 
   </form>

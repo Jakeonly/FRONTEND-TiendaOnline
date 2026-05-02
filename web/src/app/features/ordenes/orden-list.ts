@@ -7,13 +7,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { forkJoin } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { OrdenService } from '../../core/services/orden.service';
-import { OrdenRead } from '../../models/api.models';
+import { OrdenRead, UsuarioRead } from '../../models/api.models';
 import { OrdenDialogComponent, OrdenDialogData } from './orden-dialog';
 import { shortId } from '../../shared/ids';
+import { UsuarioService } from '../../core/services/usuario.service';
 
 @Component({
   selector: 'app-orden-list',
@@ -22,25 +26,29 @@ import { shortId } from '../../shared/ids';
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatTooltipModule,
   ],
   templateUrl: './orden-list.html',
   styleUrl: './orden-list.scss',
 })
 export class OrdenListComponent implements AfterViewInit {
   private readonly ordenService = inject(OrdenService);
+  private readonly usuarioService = inject(UsuarioService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
+  readonly usuariosPorId = new Map<string, string>();
 
   // Columnas ajustadas a tu dominio real
   readonly displayedColumns = [
     'id',
-    'usuario_id',
+    'usuario_nombre',
     'total',
     'estado',
     'fecha_creacion',
@@ -51,10 +59,59 @@ export class OrdenListComponent implements AfterViewInit {
 
   loading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private paginatorRef?: MatPaginator;
+  private sortRef?: MatSort;
+
+  @ViewChild(MatPaginator)
+  set paginator(value: MatPaginator | undefined) {
+    this.paginatorRef = value;
+    this.attachTableHelpers();
+  }
+
+  @ViewChild(MatSort)
+  set sort(value: MatSort | undefined) {
+    this.sortRef = value;
+    this.attachTableHelpers();
+  }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    this.attachTableHelpers();
+  }
+
+  private attachTableHelpers(): void {
+    this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
+      switch (columnName) {
+        case 'id':
+          return row.id ?? '';
+        case 'usuario_nombre':
+          return this.getUsuarioNombre(row.usuario_id);
+        case 'total':
+          return this.normalizeTotal(row.total);
+        case 'estado':
+          return row.estado ?? '';
+        case 'fecha_creacion':
+          return new Date(row.fecha_creacion ?? 0).getTime();
+        default:
+          return '';
+      }
+    };
+
+    if (this.paginatorRef) {
+      this.dataSource.paginator = this.paginatorRef;
+    }
+    if (this.sortRef) {
+      this.dataSource.sort = this.sortRef;
+    }
+  }
+
+  private normalizeTotal(total: unknown): number {
+    if (typeof total === 'number') return total;
+    if (typeof total === 'string') {
+      const normalized = total.replace(/[^\d.-]/g, '');
+      const parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    return 0;
   }
 
   constructor() {
@@ -63,9 +120,14 @@ export class OrdenListComponent implements AfterViewInit {
 
   reload(): void {
     this.loading = true;
-    this.ordenService.list().subscribe({
-      next: (rows) => {
-        this.dataSource.data = rows;
+    forkJoin({
+      ordenes: this.ordenService.list(),
+      usuarios: this.usuarioService.list(),
+    }).subscribe({
+      next: ({ ordenes, usuarios }) => {
+        this.usuariosPorId.clear();
+        usuarios.forEach((usuario: UsuarioRead) => this.usuariosPorId.set(usuario.id, usuario.nombre_completo));
+        this.dataSource.data = ordenes;
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -81,6 +143,39 @@ export class OrdenListComponent implements AfterViewInit {
 
   editar(row: OrdenRead): void {
     this.openDialog({ mode: 'edit', row });
+  }
+
+  copiarId(row: OrdenRead): void {
+    const texto = String(row.id ?? '');
+    if (!texto) return;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(texto)
+        .then(() => this.snack.open('ID de orden copiado', 'OK', { duration: 2500 }))
+        .catch(() => this.snack.open('No se pudo copiar el ID de orden', 'Cerrar', { duration: 4000 }));
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      document.execCommand('copy');
+      this.snack.open('ID de orden copiado', 'OK', { duration: 2500 });
+    } catch {
+      this.snack.open('No se pudo copiar el ID de orden', 'Cerrar', { duration: 4000 });
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+  getUsuarioNombre(usuarioId: string): string {
+    return this.usuariosPorId.get(usuarioId) ?? shortId(usuarioId);
   }
 
   private openDialog(data: OrdenDialogData): void {

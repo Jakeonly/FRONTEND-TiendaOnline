@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -54,9 +55,9 @@ export class LoginComponent {
         this.isSubmitting = false;
         void this.router.navigate(['/app']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;
-        this.errorMessage = 'Credenciales incorrectas. Intenta de nuevo.';
+        this.errorMessage = err.error?.message ?? err.error?.detail ?? 'Credenciales incorrectas. Intenta de nuevo.';
       }
     });
   }

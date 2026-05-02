@@ -12,26 +12,54 @@
   </div>
 } @else {
   <div class="table-wrap mat-elevation-z2">
-    <table mat-table [dataSource]="dataSource">
+    <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange()">
       <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let r">{{ shortId(r.id) }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">ID</th>
+        <td mat-cell *matCellDef="let r" class="id-cell">
+          <span>{{ shortId(r.id) }}</span>
+          <button
+            mat-icon-button
+            type="button"
+            class="copy-button"
+            (click)="$event.stopPropagation(); copiarId(r)"
+            aria-label="Copiar ID"
+            matTooltip="Copiar ID"
+          >
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </td>
       </ng-container>
       <ng-container matColumnDef="orden_id">
-        <th mat-header-cell *matHeaderCellDef>Orden</th>
-        <td mat-cell *matCellDef="let r">{{ shortId(r.orden_id) }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Orden</th>
+        <td mat-cell *matCellDef="let r" class="orden-cell">
+          <span>{{ shortId(r.orden_id) }}</span>
+          <button
+            mat-icon-button
+            type="button"
+            class="copy-button"
+            (click)="$event.stopPropagation(); copiarOrden(r)"
+            aria-label="Copiar orden"
+            matTooltip="Copiar orden"
+          >
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </td>
       </ng-container>
       <ng-container matColumnDef="monto">
-        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Monto</th>
         <td mat-cell *matCellDef="let r">{{ r.monto | currency:'USD':'symbol':'1.0-2' }}</td>
       </ng-container>
       <ng-container matColumnDef="metodo">
-        <th mat-header-cell *matHeaderCellDef>Método</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Método</th>
         <td mat-cell *matCellDef="let r">{{ r.metodo }}</td>
       </ng-container>
       <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Estado</th>
         <td mat-cell *matCellDef="let r">{{ r.estado || '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Fecha</th>
+        <td mat-cell *matCellDef="let r">{{ (r.fecha_edicion || r.fecha_creacion) | date:'short' }}</td>
       </ng-container>
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef></th>
@@ -47,6 +75,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons />
+    <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
   </div>
 }
