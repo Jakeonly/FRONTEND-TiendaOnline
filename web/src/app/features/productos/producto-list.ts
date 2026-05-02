@@ -13,6 +13,7 @@ import { filter } from 'rxjs/operators';
 import { ProductoService } from '../../core/services/producto.service';
 import { ProductoRead } from '../../models/api.models';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-producto-list',
@@ -34,8 +35,9 @@ export class ProductoListComponent implements AfterViewInit {
   private readonly svc = inject(ProductoService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
-  readonly displayedColumns = ['nombre', 'precio', 'stock', 'categoria_id', 'acciones'];
+  readonly displayedColumns = ['nombre', 'descripcion', 'precio', 'stock', 'categoria_id', 'acciones'];
   readonly dataSource = new MatTableDataSource<ProductoRead>([]);
   loading = true;
 

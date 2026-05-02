@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,11 +13,13 @@ import { filter } from 'rxjs/operators';
 import { CarritoService } from '../../core/services/carrito.service';
 import { CarritoRead } from '../../models/api.models';
 import { CarritoDialogComponent, CarritoDialogData } from './carrito-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-carrito-list',
   standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -32,6 +35,7 @@ export class CarritoListComponent implements AfterViewInit {
   private readonly carritoService = inject(CarritoService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
   readonly displayedColumns = ['id', 'usuario_id', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CarritoRead>([]);
@@ -78,7 +82,7 @@ export class CarritoListComponent implements AfterViewInit {
   }
 
   eliminar(row: CarritoRead): void {
-    if (!confirm(`¿Eliminar carrito del usuario ${row.usuario_id.slice(0, 8)}?`)) return;
+    if (!confirm(`¿Eliminar carrito del usuario ${shortId(row.usuario_id)}?`)) return;
     this.carritoService.delete(row.id).subscribe({
       next: () => {
         this.snack.open('Carrito eliminado', 'OK', { duration: 3000 });

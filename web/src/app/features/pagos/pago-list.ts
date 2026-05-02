@@ -1,18 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
 
 import { PagoService } from '../../core/services/pago.service';
-import { PagoRead } from '../../models/api.models';
-import { PagoDialogComponent, PagoDialogData } from './pago-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-pago-list',
@@ -31,11 +28,11 @@ import { PagoDialogComponent, PagoDialogData } from './pago-dialog';
 })
 export class PagoListComponent implements AfterViewInit {
   private readonly svc = inject(PagoService);
-  private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
-  readonly displayedColumns = ['nombre', 'id_pedido', 'referencia', 'tipo_pago', 'monto', 'estado', 'acciones'];
-  readonly dataSource = new MatTableDataSource<PagoRead>([]);
+  readonly displayedColumns = ['id', 'orden_id', 'monto', 'metodo', 'estado', 'acciones'];
+  readonly dataSource = new MatTableDataSource<any>([]);
   loading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -60,21 +57,17 @@ export class PagoListComponent implements AfterViewInit {
     });
   }
 
-  nuevo(): void { this.open({ mode: 'create' }); }
-
-  editar(row: PagoRead): void { this.open({ mode: 'edit', row }); }
-
-  private open(data: PagoDialogData): void {
-    this.dialog
-      .open(PagoDialogComponent, { width: '550px', data })
-      .afterClosed()
-      .pipe(filter(Boolean))
-      .subscribe(() => this.reload());
+  nuevo(): void {
+    this.snack.open('El alta de pagos no está disponible en esta vista', 'Cerrar', { duration: 3000 });
   }
 
-  eliminar(row: PagoRead): void {
-    if (!confirm(`¿Eliminar pago ${row.nombre}?`)) return;
-    this.svc.delete(row.id_pago).subscribe({
+  editar(row: any): void {
+    void row;
+  }
+
+  eliminar(row: any): void {
+    if (!confirm(`¿Eliminar pago ${shortId(row.id)}?`)) return;
+    this.svc.delete(row.id).subscribe({
       next: () => {
         this.snack.open('Pago eliminado', 'OK', { duration: 3000 });
         this.reload();
