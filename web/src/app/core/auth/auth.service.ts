@@ -5,6 +5,15 @@ import { environment } from '../../../environments/environment';
 import { TokenService } from './token.service';
 import { Router } from '@angular/router';
 
+interface LoginPayload {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  id_usuario: string;
+  email: string;
+  es_admin: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,11 +23,13 @@ export class AuthService {
   private router = inject(Router);
   private apiUrl = `${environment.apiUrl}/usuarios`;
 
-  login(credentials: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
+  login(credentials: { email: string; contraseña: string }): Observable<LoginPayload> {
+    // apiErrorInterceptor desempaqueta ApiResponse y deja solo body.data
+    return this.http.post<LoginPayload>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        if (response && response.access_token) {
-          this.tokenService.setToken(response.access_token);
+        const token = response?.access_token;
+        if (token) {
+          this.tokenService.setToken(token);
         }
       })
     );

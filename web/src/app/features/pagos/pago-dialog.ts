@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 
 import { PagoService } from '../../core/services/pago.service';
 import { OrdenService } from '../../core/services/orden.service';
-import { PagoRead, OrdenRead, PagoUpdate } from '../../models/api.models';
+import { PagoRead, PagoCreate, PagoUpdate, OrdenRead } from '../../models/api.models';
 
 export interface PagoDialogData {
   mode: 'create' | 'edit';
@@ -45,11 +45,8 @@ export class PagoDialogComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     orden_id: ['', Validators.required],
-    nombre: ['', Validators.required],
-    descripcion: [''],
     monto: [0, [Validators.required, Validators.min(0)]],
-    referencia: ['', Validators.required],
-    tipo_pago: ['', Validators.required],
+    metodo: ['', Validators.required],
     estado: ['pendiente'],
   });
 
@@ -62,12 +59,9 @@ export class PagoDialogComponent implements OnInit {
     if (this.data.mode === 'edit' && this.data.row) {
       const r: any = this.data.row;
       this.form.patchValue({
-        orden_id: r.orden_id ?? r.id_pedido ?? '',
-        nombre: r.nombre,
-        descripcion: r.descripcion ?? '',
+        orden_id: r.orden_id,
         monto: r.monto,
-        referencia: r.referencia,
-        tipo_pago: r.tipo_pago,
+        metodo: r.metodo,
         estado: r.estado,
       });
       this.form.controls.orden_id.disable();
@@ -85,13 +79,10 @@ export class PagoDialogComponent implements OnInit {
     const v = this.form.getRawValue();
 
     if (this.data.mode === 'create') {
-      const body: any = {
+      const body: PagoCreate = {
         orden_id: v.orden_id,
-        nombre: v.nombre,
-        descripcion: v.descripcion || undefined,
         monto: v.monto,
-        referencia: v.referencia,
-        tipo_pago: v.tipo_pago,
+        metodo: v.metodo,
         estado: v.estado,
       };
 
@@ -100,12 +91,12 @@ export class PagoDialogComponent implements OnInit {
     }
 
     const rowAny: any = this.data.row;
-    const id = rowAny?.id ?? rowAny?.id_pago;
+    const id = rowAny?.id;
     const body: PagoUpdate = {
-      nombre: v.nombre,
-      descripcion: v.descripcion || undefined,
+      monto: v.monto,
+      metodo: v.metodo,
       estado: v.estado,
-      referencia: v.referencia,
+      orden_id: v.orden_id,
     };
 
     this.svc.update(id, body).subscribe({ next: () => this.dialogRef.close(true), error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }) });
