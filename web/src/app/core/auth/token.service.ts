@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TokenService {
-  private readonly TOKEN_KEY = 'auth_token_itm';
+  private readonly TOKEN_KEY = environment.authTokenStorageKey;
 
   constructor() {}
 

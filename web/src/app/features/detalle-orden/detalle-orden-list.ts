@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,11 +13,13 @@ import { filter } from 'rxjs/operators';
 import { DetalleOrdenService } from '../../core/services/detalle-orden.service';
 import { DetalleOrdenRead } from '../../models/api.models';
 import { DetalleOrdenDialogComponent, DetalleOrdenDialogData } from './detalle-orden-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-detalle-orden-list',
   standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -32,6 +35,7 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   private readonly detalleService = inject(DetalleOrdenService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
   readonly displayedColumns = [
     'id',

@@ -16,17 +16,17 @@
       
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let r">{{ r.id | slice:0:8 }}</td>
+        <td mat-cell *matCellDef="let r">{{ shortId(r.id) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="orden_id">
         <th mat-header-cell *matHeaderCellDef>ID Orden</th>
-        <td mat-cell *matCellDef="let r">{{ r.orden_id | slice:0:8 }}</td>
+        <td mat-cell *matCellDef="let r">{{ shortId(r.orden_id) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="producto_id">
         <th mat-header-cell *matHeaderCellDef>ID Producto</th>
-        <td mat-cell *matCellDef="let r">{{ r.producto_id | slice:0:8 }}</td>
+        <td mat-cell *matCellDef="let r">{{ shortId(r.producto_id) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="cantidad">

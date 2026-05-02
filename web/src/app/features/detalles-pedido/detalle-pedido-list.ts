@@ -13,6 +13,7 @@ import { filter } from 'rxjs/operators';
 import { DetallePedidoService } from '../../core/services/detalle-pedido.service';
 import { DetallePedidoRead } from '../../models/api.models';
 import { DetallePedidoDialogComponent, DetallePedidoDialogData } from './detalle-pedido-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-detalle-pedido-list',
@@ -34,6 +35,7 @@ export class DetallePedidoListComponent implements AfterViewInit {
   private readonly svc = inject(DetallePedidoService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
   readonly displayedColumns = ['nombre', 'id_pedido', 'id_producto', 'estado', 'acciones'];
   readonly dataSource = new MatTableDataSource<DetallePedidoRead>([]);

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,11 +13,13 @@ import { filter } from 'rxjs/operators';
 import { OrdenService } from '../../core/services/orden.service';
 import { OrdenRead } from '../../models/api.models';
 import { OrdenDialogComponent, OrdenDialogData } from './orden-dialog';
+import { shortId } from '../../shared/ids';
 
 @Component({
   selector: 'app-orden-list',
   standalone: true,
   imports: [
+    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -32,6 +35,7 @@ export class OrdenListComponent implements AfterViewInit {
   private readonly ordenService = inject(OrdenService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly shortId = shortId;
 
   // Columnas ajustadas a tu dominio real
   readonly displayedColumns = [
@@ -89,7 +93,7 @@ export class OrdenListComponent implements AfterViewInit {
 
   eliminar(row: OrdenRead): void {
     // Usamos el ID corto para el mensaje como el profe
-    if (!confirm(`¿Eliminar orden ${row.id.slice(0, 8)}?`)) return;
+    if (!confirm(`¿Eliminar orden ${shortId(row.id)}?`)) return;
     
     this.ordenService.delete(row.id).subscribe({
       next: () => {

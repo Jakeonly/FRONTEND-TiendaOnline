@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,7 +7,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CommonModule } from '@angular/common';
 
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -29,6 +29,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class MainLayoutComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  readonly sidebarCollapsed = signal(false);
 
   readonly menuItems = [
     { path: 'productos', label: 'Productos', icon: 'inventory_2' },
@@ -43,5 +44,9 @@ export class MainLayoutComponent {
   logout(): void {
     this.authService.logout();
     void this.router.navigateByUrl('/login');
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((value) => !value);
   }
 }
