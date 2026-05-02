@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,13 +12,13 @@ import { filter } from 'rxjs/operators';
 import { CarritoService } from '../../core/services/carrito.service';
 import { CarritoRead } from '../../models/api.models';
 import { CarritoDialogComponent, CarritoDialogData } from './carrito-dialog';
-import { shortId } from '../../shared/ids';
+import { CommonModule } from '@angular/common';
+import { SlicePipe, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-carrito-list',
   standalone: true,
   imports: [
-    CommonModule,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -27,6 +26,7 @@ import { shortId } from '../../shared/ids';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    CommonModule,
   ],
   templateUrl: './carrito-list.html',
   styleUrl: './carrito-list.scss',
@@ -35,7 +35,7 @@ export class CarritoListComponent implements AfterViewInit {
   private readonly carritoService = inject(CarritoService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
-  readonly shortId = shortId;
+  private readonly slicePipe = inject(SlicePipe);
 
   readonly displayedColumns = ['id', 'usuario_id', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CarritoRead>([]);
@@ -82,7 +82,7 @@ export class CarritoListComponent implements AfterViewInit {
   }
 
   eliminar(row: CarritoRead): void {
-    if (!confirm(`¿Eliminar carrito del usuario ${shortId(row.usuario_id)}?`)) return;
+    if (!confirm(`¿Eliminar carrito del usuario ${this.slicePipe.transform(row.usuario_id, 0, 8)}?`)) return;
     this.carritoService.delete(row.id).subscribe({
       next: () => {
         this.snack.open('Carrito eliminado', 'OK', { duration: 3000 });
@@ -90,6 +90,10 @@ export class CarritoListComponent implements AfterViewInit {
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+  }
+
+  verDetalles(carrito: CarritoRead) {
+    console.log('Navegando a los detalles del carrito:', carrito.id);
   }
 
   private msg(err: HttpErrorResponse): string {

@@ -14,38 +14,53 @@
   <div class="table-wrap mat-elevation-z2">
     <table mat-table [dataSource]="dataSource">
       
+      <!-- Código -->
       <ng-container matColumnDef="codigo">
         <th mat-header-cell *matHeaderCellDef>Código</th>
-        <td mat-cell *matCellDef="let r"><strong>{{ r.codigo }}</strong></td>
+        <td mat-cell *matCellDef="let r">
+          <code class="promo-code">{{ r.codigo }}</code>
+        </td>
       </ng-container>
 
+      <!-- Porcentaje -->
       <ng-container matColumnDef="porcentaje">
-        <th mat-header-cell *matHeaderCellDef>Porcentaje</th>
-        <td mat-cell *matCellDef="let r">{{ r.porcentaje ? r.porcentaje + '%' : '-' }}</td>
+        <th mat-header-cell *matHeaderCellDef>Descuento (%)</th>
+        <td mat-cell *matCellDef="let r">
+          @if (r.porcentaje) {
+            <span class="pct-badge">{{ r.porcentaje }}%</span>
+          } @else {
+            <span class="text-muted">-</span>
+          }
+        </td>
       </ng-container>
 
+      <!-- Monto Fijo -->
       <ng-container matColumnDef="monto_fijo">
-        <th mat-header-cell *matHeaderCellDef>Monto Fijo</th>
-        <td mat-cell *matCellDef="let r">{{ r.monto_fijo ? (r.monto_fijo | currency) : '-' }}</td>
+        <th mat-header-cell *matHeaderCellDef>Descuento ($)</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.monto_fijo ? (r.monto_fijo | currency) : '-' }}
+        </td>
       </ng-container>
 
+      <!-- Fechas de Vigencia -->
       <ng-container matColumnDef="fecha_inicio">
-        <th mat-header-cell *matHeaderCellDef>Desde</th>
-        <td mat-cell *matCellDef="let r">{{ r.fecha_inicio | date:'shortDate' }}</td>
+        <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+        <td mat-cell *matCellDef="let r">
+          <div class="date-range">
+            <small>Desde: {{ r.fecha_inicio | date:'dd/MM/yyyy' }}</small><br>
+            <small>Hasta: {{ r.fecha_fin | date:'dd/MM/yyyy' }}</small>
+          </div>
+        </td>
       </ng-container>
 
-      <ng-container matColumnDef="fecha_fin">
-        <th mat-header-cell *matHeaderCellDef>Hasta</th>
-        <td mat-cell *matCellDef="let r">{{ r.fecha_fin | date:'shortDate' }}</td>
-      </ng-container>
-
+      <!-- Acciones -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let r" class="actions">
-          <button mat-icon-button type="button" (click)="editar(r)" aria-label="Editar">
+          <button mat-icon-button type="button" (click)="editar(r)" matTooltip="Editar cupón">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button type="button" (click)="eliminar(r)" aria-label="Eliminar">
+          <button mat-icon-button type="button" (click)="eliminar(r)" matTooltip="Eliminar cupón">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

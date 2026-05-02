@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { PagoService } from '../../core/services/pago.service';
 import { shortId } from '../../shared/ids';
@@ -22,6 +23,7 @@ import { shortId } from '../../shared/ids';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatChipsModule,
   ],
   templateUrl: './pago-list.html',
   styleUrl: './pago-list.scss',

@@ -1,8 +1,8 @@
 <div class="page-head">
-  <h1>Pagos</h1>
+  <h1>Gestión de Pagos</h1>
   <button mat-flat-button color="primary" type="button" (click)="nuevo()">
-    <mat-icon>add</mat-icon>
-    Nuevo
+    <mat-icon>payments</mat-icon>
+    Nuevo Pago
   </button>
 </div>
 
@@ -13,37 +13,74 @@
 } @else {
   <div class="table-wrap mat-elevation-z2">
     <table mat-table [dataSource]="dataSource">
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let r">{{ shortId(r.id) }}</td>
+      
+      <!-- Nombre/Cliente -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Titular / Concepto</th>
+        <td mat-cell *matCellDef="let r">{{ r.nombre }}</td>
       </ng-container>
-      <ng-container matColumnDef="orden_id">
-        <th mat-header-cell *matHeaderCellDef>Orden</th>
-        <td mat-cell *matCellDef="let r">{{ shortId(r.orden_id) }}</td>
+
+      <!-- Pedido Relacionado -->
+      <ng-container matColumnDef="id_pedido">
+        <th mat-header-cell *matHeaderCellDef>Pedido</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="uuid-text">#{{ r.id_pedido | slice:0:8 }}</span>
+        </td>
       </ng-container>
+
+      <!-- Monto -->
       <ng-container matColumnDef="monto">
         <th mat-header-cell *matHeaderCellDef>Monto</th>
-        <td mat-cell *matCellDef="let r">{{ r.monto | currency }}</td>
+        <td mat-cell *matCellDef="let r" class="amount-cell">
+          {{ r.monto | currency }}
+        </td>
       </ng-container>
-      <ng-container matColumnDef="metodo">
+
+      <!-- Referencia -->
+      <ng-container matColumnDef="referencia">
+        <th mat-header-cell *matHeaderCellDef>Referencia</th>
+        <td mat-cell *matCellDef="let r">
+          <code>{{ r.referencia }}</code>
+        </td>
+      </ng-container>
+
+      <!-- Tipo de Pago -->
+      <ng-container matColumnDef="tipo_pago">
         <th mat-header-cell *matHeaderCellDef>Método</th>
-        <td mat-cell *matCellDef="let r">{{ r.metodo }}</td>
+        <td mat-cell *matCellDef="let r">
+          <mat-chip-set>
+            <mat-chip>{{ r.tipo_pago | uppercase }}</mat-chip>
+          </mat-chip-set>
+        </td>
       </ng-container>
+
+      <!-- Estado -->
       <ng-container matColumnDef="estado">
         <th mat-header-cell *matHeaderCellDef>Estado</th>
-        <td mat-cell *matCellDef="let r">{{ r.estado || '—' }}</td>
+        <td mat-cell *matCellDef="let r">
+          <span class="status-badge" [ngClass]="r.estado">
+            {{ r.estado | titlecase }}
+          </span>
+        </td>
       </ng-container>
+
+      <!-- Acciones -->
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let r" class="actions">
-          <button mat-icon-button type="button" (click)="eliminar(r)" aria-label="Eliminar">
+          <button mat-icon-button type="button" (click)="editar(r)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button type="button" (click)="eliminar(r)">
             <mat-icon>delete</mat-icon>
           </button>
         </td>
       </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
+
     <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons />
   </div>
 }
