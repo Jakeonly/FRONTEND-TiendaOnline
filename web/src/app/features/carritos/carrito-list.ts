@@ -37,7 +37,7 @@ export class CarritoListComponent implements AfterViewInit {
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
 
-  readonly displayedColumns = ['id', 'usuario_id', 'fecha_creacion', 'acciones'];
+  readonly displayedColumns = ['id', 'usuario_email', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CarritoRead>([]);
   loading = true;
 
@@ -52,18 +52,34 @@ export class CarritoListComponent implements AfterViewInit {
   }
 
   reload(): void {
-    this.loading = true;
-    this.carritoService.list().subscribe({
-      next: (rows) => {
-        this.dataSource.data = rows;
-        this.loading = false;
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading = false;
-        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
-      },
-    });
-  }
+  this.loading = true;
+  this.carritoService.list().subscribe({
+    next: (res: any) => {
+      console.log('Respuesta RAW del servidor:', res);         // <-- ver estructura real
+      console.log('Tipo de res:', typeof res);
+      console.log('¿Es array?', Array.isArray(res));
+      console.log('res.data:', res?.data);
+
+      // Cubrir los 3 casos posibles
+      let rows: any[] = [];
+      if (Array.isArray(res)) {
+        rows = res;                    // backend retorna lista directa
+      } else if (Array.isArray(res?.data)) {
+        rows = res.data;               // backend retorna { data: [...] }
+      } else if (Array.isArray(res?.items)) {
+        rows = res.items;              // backend retorna { items: [...] }
+      }
+
+      this.dataSource.data = rows;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error en list():', err);
+      this.dataSource.data = [];
+      this.loading = false;           // ← también faltaba esto en el error
+    }
+  });
+}
 
   nuevo(): void {
     this.openDialog({ mode: 'create' });
