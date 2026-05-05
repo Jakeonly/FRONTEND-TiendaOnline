@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { PagoService } from '../../core/services/pago.service';
 import { OrdenService } from '../../core/services/orden.service';
 import { PagoRead, PagoCreate, PagoUpdate, OrdenRead } from '../../models/api.models';
+import { PricePipe } from '../../shared/price.pipe';
 
 export interface PagoDialogData {
   mode: 'create' | 'edit';
@@ -30,6 +31,7 @@ export interface PagoDialogData {
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
+    PricePipe,
   ],
   templateUrl: './pago-dialog.html',
 })
@@ -45,7 +47,7 @@ export class PagoDialogComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     orden_id: ['', Validators.required],
-    monto: [0, [Validators.required, Validators.min(0)]],
+    monto: ['', [Validators.required, this.numberValidator.bind(this)]],
     metodo: ['', Validators.required],
     estado: ['pendiente'],
   });
@@ -60,7 +62,7 @@ export class PagoDialogComponent implements OnInit {
       const r: any = this.data.row;
       this.form.patchValue({
         orden_id: r.orden_id,
-        monto: r.monto,
+        monto: this.formatNumber(r.monto),
         metodo: r.metodo,
         estado: r.estado,
       });
@@ -70,6 +72,28 @@ export class PagoDialogComponent implements OnInit {
 
   cancel(): void { this.dialogRef.close(false); }
 
+  private numberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    const parsed = this.parseNumber(String(control.value));
+    return parsed !== null ? null : { invalidNumber: true };
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    try {
+      return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private parseNumber(value: string): number | null {
+    if (!value) return null;
+    const cleaned = value.replace(/\./g, '').replace(/,/g, '.');
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : null;
+  }
+
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -77,11 +101,22 @@ export class PagoDialogComponent implements OnInit {
     }
 
     const v = this.form.getRawValue();
+    const montoNum = this.parseNumber(String(v.monto));
+
+    if (montoNum === null) {
+      this.snack.open('Monto inválido', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
+    if (montoNum <= 0) {
+      this.snack.open('El monto debe ser mayor a 0', 'Cerrar', { duration: 6000 });
+      return;
+    }
 
     if (this.data.mode === 'create') {
       const body: PagoCreate = {
         orden_id: v.orden_id,
-        monto: v.monto,
+        monto: montoNum,
         metodo: v.metodo,
         estado: v.estado,
       };
@@ -93,7 +128,7 @@ export class PagoDialogComponent implements OnInit {
     const rowAny: any = this.data.row;
     const id = rowAny?.id;
     const body: PagoUpdate = {
-      monto: v.monto,
+      monto: montoNum,
       metodo: v.metodo,
       estado: v.estado,
       orden_id: v.orden_id,

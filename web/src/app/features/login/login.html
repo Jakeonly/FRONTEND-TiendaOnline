@@ -2,7 +2,6 @@
   <mat-card class="login-card" appearance="outlined">
     <mat-card-header>
       <mat-card-title>Tienda Online ITM</mat-card-title>
-      <mat-card-subtitle>Ingresa tus credenciales para continuar</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -16,7 +15,22 @@
 
         <mat-form-field appearance="outline" class="full">
           <mat-label>Contraseña</mat-label>
-          <input matInput type="password" formControlName="password" autocomplete="current-password" />
+          <input
+            matInput
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-pressed]="showPassword"
+          >
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
         </mat-form-field>
 
         <!-- Spinner solo si estamos procesando el login -->

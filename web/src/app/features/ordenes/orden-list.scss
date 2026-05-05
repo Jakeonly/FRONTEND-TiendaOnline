@@ -36,18 +36,27 @@
   font-size: 0.85rem;
   font-weight: 500;
   text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  min-width: 92px;
+  justify-content: center;
+  border: 1px solid transparent;
   
   &.pendiente { 
-    background-color: color-mix(in srgb, var(--mat-sys-error-container) 40%, transparent);
-    color: var(--mat-sys-error);
+    background-color: color-mix(in srgb, #2563eb 16%, transparent);
+    color: #1d4ed8;
+    border-color: color-mix(in srgb, #2563eb 28%, transparent);
   }
-  &.pagado { 
-    background-color: color-mix(in srgb, var(--mat-sys-primary-container) 40%, transparent);
-    color: var(--mat-sys-primary);
+  &.pagado,
+  &.pagada { 
+    background-color: color-mix(in srgb, #16a34a 16%, transparent);
+    color: #15803d;
+    border-color: color-mix(in srgb, #16a34a 28%, transparent);
   }
   &.cancelado { 
-    background-color: var(--mat-sys-outline-variant);
-    color: var(--mat-sys-on-surface-variant);
+    background-color: color-mix(in srgb, #dc2626 16%, transparent);
+    color: #b91c1c;
+    border-color: color-mix(in srgb, #dc2626 28%, transparent);
   }
 }
 

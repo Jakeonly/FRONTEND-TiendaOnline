@@ -18,6 +18,7 @@ import { OrdenRead, UsuarioRead } from '../../models/api.models';
 import { OrdenDialogComponent, OrdenDialogData } from './orden-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { PricePipe } from '../../shared/price.pipe';
 
 @Component({
   selector: 'app-orden-list',
@@ -33,6 +34,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    PricePipe,
   ],
   templateUrl: './orden-list.html',
   styleUrl: './orden-list.scss',
@@ -176,6 +178,26 @@ export class OrdenListComponent implements AfterViewInit {
 
   getUsuarioNombre(usuarioId: string): string {
     return this.usuariosPorId.get(usuarioId) ?? shortId(usuarioId);
+  }
+
+  estadoClass(estado: string | null | undefined): string {
+    const normalized = this.normalizeEstado(estado);
+    if (normalized === 'pagada') return 'pagada';
+    if (normalized === 'pendiente') return 'pendiente';
+    if (normalized === 'cancelado') return 'cancelado';
+    return '';
+  }
+
+  estadoLabel(estado: string | null | undefined): string {
+    const normalized = this.normalizeEstado(estado);
+    if (normalized === 'pagada') return 'Pagada';
+    if (normalized === 'pendiente') return 'Pendiente';
+    if (normalized === 'cancelado') return 'Cancelada';
+    return String(estado ?? '');
+  }
+
+  private normalizeEstado(estado: string | null | undefined): string {
+    return String(estado ?? '').trim().toLowerCase();
   }
 
   private openDialog(data: OrdenDialogData): void {

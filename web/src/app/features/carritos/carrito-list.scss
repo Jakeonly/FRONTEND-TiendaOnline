@@ -59,3 +59,29 @@
 .mat-mdc-row:hover {
   background-color: color-mix(in srgb, var(--mat-sys-primary) 4%, transparent);
 }
+
+/* Estilos para estados del carrito */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  min-width: 92px;
+  justify-content: center;
+  border: 1px solid transparent;
+  
+  &.pendiente { 
+    background-color: color-mix(in srgb, #6b7280 16%, transparent);
+    color: #374151;
+    border-color: color-mix(in srgb, #6b7280 28%, transparent);
+  }
+  
+  &.pagado { 
+    background-color: color-mix(in srgb, #16a34a 16%, transparent);
+    color: #15803d;
+    border-color: color-mix(in srgb, #16a34a 28%, transparent);
+  }
+}

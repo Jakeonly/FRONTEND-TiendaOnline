@@ -47,7 +47,7 @@
       </ng-container>
       <ng-container matColumnDef="monto">
         <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Monto</th>
-        <td mat-cell *matCellDef="let r">{{ r.monto | currency:'USD':'symbol':'1.0-2' }}</td>
+        <td mat-cell *matCellDef="let r">{{ r.monto | price }}</td>
       </ng-container>
       <ng-container matColumnDef="metodo">
         <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Método</th>
@@ -75,6 +75,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+    <mat-paginator [pageSizeOptions]="[10, 5, 25]" showFirstLastButtons></mat-paginator>
   </div>
 }

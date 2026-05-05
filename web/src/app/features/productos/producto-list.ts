@@ -6,14 +6,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 import { CategoriaService } from '../../core/services/categoria.service';
 import { ProductoService } from '../../core/services/producto.service';
 import { CategoriaRead, ProductoRead } from '../../models/api.models';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
+import { PricePipe } from '../../shared/price.pipe';
 
 @Component({
   selector: 'app-producto-list',
@@ -22,11 +25,13 @@ import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    PricePipe,
   ],
   templateUrl: './producto-list.html',
   styleUrl: './producto-list.scss',
@@ -42,46 +47,80 @@ export class ProductoListComponent implements AfterViewInit {
   readonly categoriasPorId = new Map<string, string>();
   loading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private paginatorRef?: MatPaginator;
+  private sortRef?: MatSort;
+
+  @ViewChild(MatPaginator)
+  set paginator(value: MatPaginator | undefined) {
+    this.paginatorRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
+
+  @ViewChild(MatSort)
+  set sort(value: MatSort | undefined) {
+    this.sortRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // No llamar nuevamente aquí, los setters ya lo hacen
+  }
+
+  private attachTableHelpers(): void {
+    // Solo ejecutar si tenemos ambos referencias
+    if (!this.paginatorRef || !this.sortRef) return;
+
+    this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
+      switch (columnName) {
+        case 'nombre':
+          return row.nombre ?? '';
+        case 'descripcion':
+          return row.descripcion ?? '';
+        case 'precio':
+          return Number(row.precio) || 0;
+        case 'stock':
+          return Number(row.stock) || 0;
+        case 'categoria_id':
+          return row.categoria_id ?? '';
+        default:
+          return '';
+      }
+    };
+
+    this.dataSource.paginator = this.paginatorRef;
+    this.dataSource.sort = this.sortRef;
   }
 
   constructor() {
-    this.loadCategorias();
     this.reload();
+  }
+
+  reload(): void {
+    this.loading = true;
+    forkJoin({
+      productos: this.svc.list(),
+      categorias: this.categoriaSvc.list(),
+    }).subscribe({
+      next: ({ productos, categorias }) => {
+        this.categoriasPorId.clear();
+        categorias.forEach((cat: CategoriaRead) => this.categoriasPorId.set(cat.id, cat.nombre));
+        this.dataSource.data = productos;
+        this.loading = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+      },
+    });
   }
 
   categoriaNombre(id: string | null | undefined): string {
     if (!id) return '—';
     return this.categoriasPorId.get(id) ?? '—';
-  }
-
-  private loadCategorias(): void {
-    this.categoriaSvc.list().subscribe({
-      next: (rows: CategoriaRead[]) => {
-        this.categoriasPorId.clear();
-        rows.forEach((row) => this.categoriasPorId.set(row.id, row.nombre));
-      },
-      error: (err: HttpErrorResponse) => {
-        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
-      },
-    });
-  }
-
-  reload(): void {
-    this.loading = true;
-    this.svc.list().subscribe({
-      next: (rows) => {
-        this.dataSource.data = rows;
-        this.loading = false;
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading = false;
-        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
-      },
-    });
   }
 
   nuevo(): void {

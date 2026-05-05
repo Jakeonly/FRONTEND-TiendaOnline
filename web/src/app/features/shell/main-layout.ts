@@ -34,11 +34,12 @@ export class MainLayoutComponent {
   readonly menuItems = [
     { path: 'productos', label: 'Productos', icon: 'inventory_2' },
     { path: 'categorias', label: 'Categorías', icon: 'category' },
-    { path: 'carritos', label: 'Mi Carrito', icon: 'shopping_cart' },
-    { path: 'ordenes', label: 'Mis Órdenes', icon: 'receipt_long' },
+    { path: 'carritos', label: 'Carritos', icon: 'shopping_cart' },
+    { path: 'ordenes', label: 'Órdenes', icon: 'receipt_long' },
     { path: 'descuentos', label: 'Cupones', icon: 'sell' },
     { path: 'usuarios', label: 'Usuarios', icon: 'group' },
     { path: 'pagos', label: 'Pagos', icon: 'payments' },
+    { path: 'comprar', label: 'Comprar', icon: 'shopping_bag' },
   ];
 
   logout(): void {

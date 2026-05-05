@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -21,6 +22,7 @@ import { CategoriaDialogComponent, CategoriaDialogData } from './categoria-dialo
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
@@ -39,10 +41,47 @@ export class CategoriaListComponent implements AfterViewInit {
   readonly dataSource = new MatTableDataSource<CategoriaRead>([]);
   loading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private paginatorRef?: MatPaginator;
+  private sortRef?: MatSort;
+
+  @ViewChild(MatPaginator)
+  set paginator(value: MatPaginator | undefined) {
+    this.paginatorRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
+
+  @ViewChild(MatSort)
+  set sort(value: MatSort | undefined) {
+    this.sortRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // Los setters ya configuran los helpers
+  }
+
+  private attachTableHelpers(): void {
+    if (!this.paginatorRef || !this.sortRef) return;
+
+    this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
+      switch (columnName) {
+        case 'nombre':
+          return row.nombre ?? '';
+        case 'descripcion':
+          return row.descripcion ?? '';
+        case 'fecha_creacion':
+          return row.fecha_creacion ?? '';
+        default:
+          return '';
+      }
+    };
+
+    this.dataSource.paginator = this.paginatorRef;
+    this.dataSource.sort = this.sortRef;
   }
 
   constructor() {

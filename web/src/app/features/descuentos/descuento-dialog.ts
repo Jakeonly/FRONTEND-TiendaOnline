@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,7 +39,7 @@ export class DescuentoDialogComponent {
   readonly form = this.fb.nonNullable.group({
     codigo: ['', Validators.required],
     porcentaje: [0],
-    monto_fijo: [0],
+    monto_fijo: ['', [Validators.required, this.numberValidator.bind(this)]],
     fecha_inicio: ['', Validators.required],
     fecha_fin: ['', Validators.required],
   });
@@ -50,11 +50,33 @@ export class DescuentoDialogComponent {
       this.form.patchValue({
         codigo: r.codigo,
         porcentaje: r.porcentaje ?? 0,
-        monto_fijo: r.monto_fijo ?? 0,
+        monto_fijo: this.formatNumber(r.monto_fijo),
         fecha_inicio: r.fecha_inicio.split('T')[0], // Ajuste para input date
         fecha_fin: r.fecha_fin.split('T')[0],
       });
     }
+  }
+
+  private numberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    const parsed = this.parseNumber(String(control.value));
+    return parsed !== null ? null : { invalidNumber: true };
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    try {
+      return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private parseNumber(value: string): number | null {
+    if (!value) return null;
+    const cleaned = value.replace(/\./g, '').replace(/,/g, '.');
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : null;
   }
 
   cancel(): void {
@@ -68,9 +90,20 @@ export class DescuentoDialogComponent {
     }
 
     const v = this.form.getRawValue();
+    const montoFijo = this.parseNumber(String(v.monto_fijo));
+
+    if (montoFijo === null) {
+      this.snack.open('Monto fijo inválido', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
+    if (montoFijo <= 0) {
+      this.snack.open('El monto fijo debe ser mayor a 0', 'Cerrar', { duration: 6000 });
+      return;
+    }
 
     if (this.data.mode === 'create') {
-      this.descuentoService.create(v).subscribe({
+      this.descuentoService.create({ ...v, monto_fijo: montoFijo }).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
@@ -81,7 +114,7 @@ export class DescuentoDialogComponent {
     const body: DescuentoUpdate = {
       codigo: v.codigo,
       porcentaje: v.porcentaje || undefined,
-      monto_fijo: v.monto_fijo || undefined,
+      monto_fijo: montoFijo,
       fecha_inicio: v.fecha_inicio,
       fecha_fin: v.fecha_fin
     };
