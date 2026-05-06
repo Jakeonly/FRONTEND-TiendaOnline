@@ -3,7 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -17,6 +19,7 @@ import { DetalleOrdenDialogComponent, DetalleOrdenDialogData } from './detalle-o
 import { shortId } from '../../shared/ids';
 import { PricePipe } from '../../shared/price.pipe';
 import { AuthService } from '../../core/auth/auth.service';
+import { createTextFilterPredicate } from '../../shared/table-search';
 
 @Component({
   selector: 'app-detalle-orden-list',
@@ -28,6 +31,8 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -56,6 +61,7 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   
   readonly dataSource = new MatTableDataSource<DetalleOrdenRead>([]);
   loading = true;
+  searchOpen = false;
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -107,7 +113,18 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextFilterPredicate((row) => this.buildSearchText(row));
     this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.dataSource.filter = value.trim();
+    this.dataSource.paginator?.firstPage();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
   }
 
   reload(): void {
@@ -150,6 +167,20 @@ export class DetalleOrdenListComponent implements AfterViewInit {
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+  }
+
+  private buildSearchText(row: DetalleOrdenRead): string {
+    return [
+      row.id,
+      shortId(row.id),
+      row.orden_id,
+      shortId(row.orden_id),
+      row.producto_id,
+      shortId(row.producto_id),
+      row.cantidad,
+      row.precio_unitario,
+      row.subtotal,
+    ].join(' ');
   }
 
   private msg(err: HttpErrorResponse): string {

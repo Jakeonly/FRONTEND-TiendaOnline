@@ -74,6 +74,54 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   padding-top: 8px;
 }
 
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 16px;
+}
+
+.table-search {
+  width: min(420px, 100%);
+}
+
+.page-head__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+
+.page-head__title-row h1 {
+  margin: 0;
+}
+
+.page-head__search-toggle {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+}
+
+.page-head__search-field {
+  width: min(180px, 100%);
+  margin: 0;
+}
+
+.page-head__search-field .mat-mdc-text-field-wrapper {
+  border-radius: 999px;
+}
+
+.page-head__search-field .mat-mdc-form-field-infix {
+  min-height: 34px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.page-head__search-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
 .dialog-body .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

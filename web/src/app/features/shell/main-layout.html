@@ -21,7 +21,23 @@
 
     <!-- Lista de Navegación Real -->
     <mat-nav-list class="nav-list">
-      @for (item of menuItems; track item.path) {
+      @for (item of featuredMenuItems; track item.path) {
+        <a 
+          mat-list-item 
+          class="nav-item" 
+          [routerLink]="['/app', item.path]" 
+          routerLinkActive="active-link"
+          [matTooltip]="sidebarCollapsed() ? item.label : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon matListItemIcon class="nav-item__icon">{{ item.icon }}</mat-icon>
+          <span matListItemTitle class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+
+      <div class="nav-divider" aria-hidden="true"></div>
+
+      @for (item of secondaryMenuItems; track item.path) {
         <a 
           mat-list-item 
           class="nav-item" 

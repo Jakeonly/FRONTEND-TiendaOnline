@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -14,6 +16,7 @@ import { filter } from 'rxjs/operators';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { UsuarioRead } from '../../models/api.models';
 import { UsuarioDialogComponent, UsuarioDialogData } from './usuario-dialog';
+import { createTextFilterPredicate } from '../../shared/table-search';
 
 @Component({
   selector: 'app-usuario-list',
@@ -25,6 +28,8 @@ import { UsuarioDialogComponent, UsuarioDialogData } from './usuario-dialog';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -40,6 +45,7 @@ export class UsuarioListComponent implements AfterViewInit {
   readonly displayedColumns = ['nombre_completo', 'email', 'rol', 'estado', 'acciones'];
   readonly dataSource = new MatTableDataSource<UsuarioRead>([]);
   loading = true;
+  searchOpen = false;
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -86,7 +92,20 @@ export class UsuarioListComponent implements AfterViewInit {
     this.dataSource.sort = this.sortRef;
   }
 
-  constructor() { this.reload(); }
+  constructor() {
+    this.dataSource.filterPredicate = createTextFilterPredicate((row) => this.buildSearchText(row));
+    this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.dataSource.filter = value.trim();
+    this.dataSource.paginator?.firstPage();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+  }
 
   reload(): void {
     this.loading = true;
@@ -123,6 +142,16 @@ export class UsuarioListComponent implements AfterViewInit {
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+  }
+
+  private buildSearchText(row: UsuarioRead): string {
+    return [
+      row.id,
+      row.nombre_completo,
+      row.email,
+      row.es_admin ? 'administrador' : 'cliente',
+      row.activo ? 'activo' : 'inactivo',
+    ].join(' ');
   }
 
   private msg(err: HttpErrorResponse): string {

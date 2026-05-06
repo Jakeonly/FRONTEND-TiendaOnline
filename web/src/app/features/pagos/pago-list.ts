@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,6 +17,7 @@ import { PagoService } from '../../core/services/pago.service';
 import { shortId } from '../../shared/ids';
 import { PagoDialogComponent } from './pago-dialog';
 import { PricePipe } from '../../shared/price.pipe';
+import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
   selector: 'app-pago-list',
@@ -26,6 +29,8 @@ import { PricePipe } from '../../shared/price.pipe';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -43,6 +48,10 @@ export class PagoListComponent implements AfterViewInit {
   readonly displayedColumns = ['id', 'orden_id', 'monto', 'metodo', 'estado', 'fecha', 'acciones'];
   readonly dataSource = new MatTableDataSource<any>([]);
   loading = true;
+  searchOpen = false;
+  dateSearchOpen = false;
+  searchValue = '';
+  selectedDate = '';
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -61,6 +70,10 @@ export class PagoListComponent implements AfterViewInit {
 
   constructor() {
     // Configure sorting data accessor BEFORE any data is loaded
+    this.dataSource.filterPredicate = createTextAndDateFilterPredicate<any>(
+      (row) => [row.fecha_edicion || row.fecha_creacion],
+      (row) => this.buildSearchText(row),
+    );
     this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
       const value = row[columnName];
       if (typeof value === 'string') return value.toLowerCase();
@@ -79,6 +92,29 @@ export class PagoListComponent implements AfterViewInit {
 
   onSortChange(): void {
     this.attachTableHelpers();
+  }
+
+  filtrarTabla(event: Event): void {
+    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  filtrarFecha(event: Event): void {
+    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+  }
+
+  toggleDateSearch(): void {
+    this.dateSearchOpen = !this.dateSearchOpen;
+  }
+
+  private applyFilters(): void {
+    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
+    this.dataSource.paginator?.firstPage();
   }
 
   private attachTableHelpers(): void {
@@ -110,6 +146,18 @@ export class PagoListComponent implements AfterViewInit {
 
   editar(row: any): void {
     this.openDialog({ mode: 'edit', row });
+  }
+
+  private buildSearchText(row: any): string {
+    return [
+      row.id,
+      shortId(row.id),
+      row.orden_id,
+      shortId(row.orden_id),
+      row.monto,
+      row.metodo,
+      row.estado,
+    ].join(' ');
   }
 
   async copiarId(row: any): Promise<void> {

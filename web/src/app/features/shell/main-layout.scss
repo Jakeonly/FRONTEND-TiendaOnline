@@ -75,6 +75,12 @@
   padding-top: 8px;
 }
 
+.nav-divider {
+  margin: 12px 18px 10px;
+  border-top: 2px solid color-mix(in srgb, var(--mat-sys-primary) 72%, transparent);
+  opacity: 0.9;
+}
+
 .nav-item {
   margin: 4px 10px;
   border-radius: 12px !important;

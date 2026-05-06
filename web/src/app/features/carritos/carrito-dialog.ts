@@ -1,14 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { CarritoService } from '../../core/services/carrito.service';
-import { CarritoRead, CarritoUpdate } from '../../models/api.models';
+import { UsuarioService } from '../../core/services/usuario.service';
+import { CarritoRead, CarritoUpdate, UsuarioRead } from '../../models/api.models';
 
 export interface CarritoDialogData {
   mode: 'create' | 'edit';
@@ -19,28 +23,40 @@ export interface CarritoDialogData {
   selector: 'app-carrito-dialog',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
+    MatSelectModule,
     MatSnackBarModule,
   ],
   templateUrl: './carrito-dialog.html',
 })
-export class CarritoDialogComponent {
+export class CarritoDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly carritoService = inject(CarritoService);
+  private readonly usuarioService = inject(UsuarioService);
   private readonly dialogRef = inject(MatDialogRef<CarritoDialogComponent, boolean>);
   private readonly snack = inject(MatSnackBar);
 
   readonly data = inject<CarritoDialogData>(MAT_DIALOG_DATA);
+  usuarios: UsuarioRead[] = [];
 
   readonly form = this.fb.nonNullable.group({
     usuario_id: ['', Validators.required],
   });
 
-  constructor() {
+  ngOnInit(): void {
+    this.usuarioService.list().subscribe({
+      next: (rows) => {
+        this.usuarios = rows;
+      },
+      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+    });
+
     if (this.data.mode === 'edit' && this.data.row) {
       const r = this.data.row;
       this.form.patchValue({

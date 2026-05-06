@@ -1,5 +1,23 @@
 <div class="page-head">
-  <h1>Productos</h1>
+  <div class="page-head__title-row">
+    <h1>Productos</h1>
+    <button
+      mat-icon-button
+      type="button"
+      class="page-head__search-toggle"
+      (click)="toggleSearch()"
+      [attr.aria-label]="searchOpen ? 'Cerrar búsqueda' : 'Abrir búsqueda'"
+      [attr.aria-expanded]="searchOpen"
+    >
+      <mat-icon>{{ searchOpen ? 'close' : 'search' }}</mat-icon>
+    </button>
+    @if (searchOpen) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
+        <mat-label>Buscar...</mat-label>
+        <input matInput type="text" (input)="filtrarTabla($event)" />
+      </mat-form-field>
+    }
+  </div>
   <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage">
     <mat-icon>add</mat-icon>
     Nuevo

@@ -3,7 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -20,6 +22,7 @@ import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PricePipe } from '../../shared/price.pipe';
 import { AuthService } from '../../core/auth/auth.service';
+import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
   selector: 'app-orden-list',
@@ -31,6 +34,8 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -63,6 +68,10 @@ export class OrdenListComponent implements AfterViewInit {
   readonly dataSource = new MatTableDataSource<OrdenRead>([]);
 
   loading = true;
+  searchOpen = false;
+  dateSearchOpen = false;
+  searchValue = '';
+  selectedDate = '';
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -122,7 +131,34 @@ export class OrdenListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextAndDateFilterPredicate<OrdenRead>(
+      (row) => [row.fecha_creacion],
+      (row) => this.buildSearchText(row),
+    );
     this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  filtrarFecha(event: Event): void {
+    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+  }
+
+  toggleDateSearch(): void {
+    this.dateSearchOpen = !this.dateSearchOpen;
+  }
+
+  private applyFilters(): void {
+    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
+    this.dataSource.paginator?.firstPage();
   }
 
   get canManage(): boolean {
@@ -226,6 +262,20 @@ export class OrdenListComponent implements AfterViewInit {
 
   getUsuarioNombre(usuarioId: string): string {
     return this.usuariosPorId.get(usuarioId) ?? shortId(usuarioId);
+  }
+
+  private buildSearchText(row: OrdenRead): string {
+    return [
+      row.id,
+      shortId(row.id),
+      row.usuario_id,
+      shortId(row.usuario_id),
+      this.getUsuarioNombre(row.usuario_id),
+      row.total,
+      row.estado,
+      row.carrito_id,
+      row.carrito_id ? shortId(row.carrito_id) : '',
+    ].join(' ');
   }
 
   estadoClass(estado: string | null | undefined): string {

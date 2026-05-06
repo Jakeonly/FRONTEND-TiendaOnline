@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -15,6 +17,7 @@ import { DescuentoService } from '../../core/services/descuento.service';
 import { DescuentoRead } from '../../models/api.models';
 import { DescuentoDialogComponent, DescuentoDialogData } from './descuento-dialog';
 import { PricePipe } from '../../shared/price.pipe';
+import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
   selector: 'app-descuento-list',
@@ -26,6 +29,8 @@ import { PricePipe } from '../../shared/price.pipe';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -50,6 +55,10 @@ export class DescuentoListComponent implements AfterViewInit {
   
   readonly dataSource = new MatTableDataSource<DescuentoRead>([]);
   loading = true;
+  searchOpen = false;
+  dateSearchOpen = false;
+  searchValue = '';
+  selectedDate = '';
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -99,7 +108,34 @@ export class DescuentoListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextAndDateFilterPredicate<DescuentoRead>(
+      (row) => [row.fecha_inicio, row.fecha_fin],
+      (row) => this.buildSearchText(row),
+    );
     this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  filtrarFecha(event: Event): void {
+    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+  }
+
+  toggleDateSearch(): void {
+    this.dateSearchOpen = !this.dateSearchOpen;
+  }
+
+  private applyFilters(): void {
+    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
+    this.dataSource.paginator?.firstPage();
   }
 
   reload(): void {
@@ -141,6 +177,15 @@ export class DescuentoListComponent implements AfterViewInit {
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+  }
+
+  private buildSearchText(row: DescuentoRead): string {
+    return [
+      row.id,
+      row.codigo,
+      row.porcentaje,
+      row.monto_fijo,
+    ].join(' ');
   }
 
   private msg(err: HttpErrorResponse): string {
