@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { auditUserGuard } from './core/audit-user.guard';
+import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -9,7 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'app',
-    canActivate: [auditUserGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./features/shell/main-layout').then((m) => m.MainLayoutComponent),
     children: [
 
@@ -29,7 +29,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/productos/producto-list').then((m) => m.ProductoListComponent),
       },
-
       {
         path: 'ordenes', 
         loadComponent: () =>
@@ -64,12 +63,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/descuentos/descuento-list').then((m) => m.DescuentoListComponent),
       },
-
       {
         path: 'pagos',
         loadComponent: () => import('./features/pagos/pago-list').then((m) => m.PagoListComponent),
       },
-      
     ],
   },
   { path: '**', redirectTo: 'login' },
