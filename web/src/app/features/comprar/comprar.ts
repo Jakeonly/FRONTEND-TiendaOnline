@@ -115,7 +115,7 @@ export class ComprarComponent implements OnInit {
   }
 
   get carritosPendientes(): CarritoRead[] {
-    return this.carritos.filter((carrito) => carrito.estado === 'Pendiente');
+    return this.carritos.filter((carrito) => this.esEstadoPendiente(carrito.estado));
   }
 
   get totalBruto(): number {
@@ -145,15 +145,14 @@ export class ComprarComponent implements OnInit {
       descuentos: this.descuentoService.list(),
     }).subscribe({
       next: ({ carritos, usuarios, productos, descuentos }) => {
-        // Filtrar carritos por estado y usuario (a menos que sea admin)
+        // Mostrar solo carritos del usuario actual y pendientes de pago.
         const usuarioActual = this.authService.getCurrentUser();
-        let carritosFiltrados = carritos.filter((carrito) => carrito.estado === 'Pendiente');
-        
-        if (usuarioActual && !usuarioActual.es_admin) {
-          carritosFiltrados = carritosFiltrados.filter((carrito) => carrito.usuario_id === usuarioActual.id);
-        }
-        
-        this.carritos = carritosFiltrados;
+        this.carritos = carritos.filter(
+          (carrito) =>
+            this.esEstadoPendiente(carrito.estado) &&
+            !!usuarioActual &&
+            carrito.usuario_id === usuarioActual.id,
+        );
         this.usuarios = usuarios;
         this.productos = productos;
         this.descuentos = descuentos;
@@ -389,5 +388,9 @@ export class ComprarComponent implements OnInit {
     if (typeof d === 'string') return d;
     if (Array.isArray(d)) return d.map((x: any) => x.msg ?? JSON.stringify(x)).join('; ');
     return err.message;
+  }
+
+  private esEstadoPendiente(estado: string | null | undefined): boolean {
+    return String(estado ?? '').trim().toLowerCase() === 'pendiente';
   }
 }

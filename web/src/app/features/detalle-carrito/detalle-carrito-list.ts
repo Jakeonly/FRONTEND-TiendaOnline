@@ -15,6 +15,7 @@ import { DetalleCarritoService } from '../../core/services/detalle-carrito.servi
 import { DetalleCarritoRead } from '../../models/api.models';
 import { DetalleCarritoDialogComponent, DetalleCarritoDialogData } from './detalle-carrito-dialog';
 import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-detalle-carrito-list',
@@ -36,8 +37,10 @@ import { PricePipe } from '../../shared/price.pipe';
 })
 export class DetalleCarritoListComponent implements AfterViewInit {
   private readonly detalleService = inject(DetalleCarritoService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
 
   readonly displayedColumns = [
     'id',
@@ -117,6 +120,7 @@ export class DetalleCarritoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

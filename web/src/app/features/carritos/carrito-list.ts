@@ -17,6 +17,7 @@ import { CarritoRead, UsuarioRead } from '../../models/api.models';
 import { CarritoDialogComponent, CarritoDialogData } from './carrito-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-carrito-list',
@@ -38,8 +39,10 @@ import { UsuarioService } from '../../core/services/usuario.service';
 export class CarritoListComponent implements AfterViewInit {
   private readonly carritoService = inject(CarritoService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
   readonly shortId = shortId;
   readonly usuariosPorId = new Map<string, string>();
 
@@ -118,6 +121,7 @@ export class CarritoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

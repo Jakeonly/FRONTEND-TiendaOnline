@@ -1,6 +1,6 @@
 <div class="page-head">
   <h1>Detalles de Órdenes</h1>
-  <button mat-flat-button color="primary" type="button" (click)="nuevo()">
+  <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage">
     <mat-icon>add</mat-icon>
     Agregar Producto
   </button>

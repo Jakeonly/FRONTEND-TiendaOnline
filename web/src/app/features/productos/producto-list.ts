@@ -17,6 +17,7 @@ import { ProductoService } from '../../core/services/producto.service';
 import { CategoriaRead, ProductoRead } from '../../models/api.models';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
 import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-producto-list',
@@ -39,8 +40,10 @@ import { PricePipe } from '../../shared/price.pipe';
 export class ProductoListComponent implements AfterViewInit {
   private readonly categoriaSvc = inject(CategoriaService);
   private readonly svc = inject(ProductoService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
 
   readonly displayedColumns = ['nombre', 'descripcion', 'precio', 'stock', 'categoria_id', 'acciones'];
   readonly dataSource = new MatTableDataSource<ProductoRead>([]);
@@ -124,6 +127,7 @@ export class ProductoListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

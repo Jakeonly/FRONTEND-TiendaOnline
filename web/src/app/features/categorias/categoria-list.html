@@ -1,6 +1,6 @@
 <div class="page-head">
   <h1>Categorías</h1>
-  <button mat-flat-button color="primary" type="button" (click)="nuevo()">
+  <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage">
     <mat-icon>add</mat-icon>
     Nueva
   </button>

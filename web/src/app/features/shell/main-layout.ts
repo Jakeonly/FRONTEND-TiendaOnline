@@ -31,6 +31,8 @@ export class MainLayoutComponent {
   private readonly router = inject(Router);
   readonly sidebarCollapsed = signal(false);
 
+  private readonly adminOnlyPaths = new Set(['carritos', 'descuentos', 'usuarios', 'pagos']);
+
   readonly menuItems = [
     { path: 'productos', label: 'Productos', icon: 'inventory_2' },
     { path: 'categorias', label: 'Categorías', icon: 'category' },
@@ -40,7 +42,7 @@ export class MainLayoutComponent {
     { path: 'usuarios', label: 'Usuarios', icon: 'group' },
     { path: 'pagos', label: 'Pagos', icon: 'payments' },
     { path: 'comprar', label: 'Comprar', icon: 'shopping_bag' },
-  ];
+  ].filter((item) => this.authService.isAdmin() || !this.adminOnlyPaths.has(item.path));
 
   logout(): void {
     this.authService.logout();

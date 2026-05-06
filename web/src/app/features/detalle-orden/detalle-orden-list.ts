@@ -16,6 +16,7 @@ import { DetalleOrdenRead } from '../../models/api.models';
 import { DetalleOrdenDialogComponent, DetalleOrdenDialogData } from './detalle-orden-dialog';
 import { shortId } from '../../shared/ids';
 import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-detalle-orden-list',
@@ -37,8 +38,10 @@ import { PricePipe } from '../../shared/price.pipe';
 })
 export class DetalleOrdenListComponent implements AfterViewInit {
   private readonly detalleService = inject(DetalleOrdenService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
   readonly shortId = shortId;
 
   readonly displayedColumns = [
@@ -122,6 +125,7 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

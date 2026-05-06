@@ -19,6 +19,7 @@ import { OrdenDialogComponent, OrdenDialogData } from './orden-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-orden-list',
@@ -42,6 +43,7 @@ import { PricePipe } from '../../shared/price.pipe';
 export class OrdenListComponent implements AfterViewInit {
   private readonly ordenService = inject(OrdenService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
@@ -120,6 +122,10 @@ export class OrdenListComponent implements AfterViewInit {
     this.reload();
   }
 
+  get canManage(): boolean {
+    return this.authService.isAdmin();
+  }
+
   reload(): void {
     this.loading = true;
     forkJoin({
@@ -127,9 +133,17 @@ export class OrdenListComponent implements AfterViewInit {
       usuarios: this.usuarioService.list(),
     }).subscribe({
       next: ({ ordenes, usuarios }) => {
+        const usuarioActual = this.authService.getCurrentUser();
+        const puedeVerTodas = this.authService.isAdmin();
+        const ordenesFiltradas = puedeVerTodas
+          ? ordenes
+          : ordenes.filter(
+              (orden) => !!usuarioActual && orden.usuario_id === usuarioActual.id,
+            );
+
         this.usuariosPorId.clear();
         usuarios.forEach((usuario: UsuarioRead) => this.usuariosPorId.set(usuario.id, usuario.nombre_completo));
-        this.dataSource.data = ordenes;
+        this.dataSource.data = ordenesFiltradas;
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -140,6 +154,7 @@ export class OrdenListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

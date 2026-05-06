@@ -14,6 +14,7 @@ import { filter } from 'rxjs/operators';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { CategoriaRead } from '../../models/api.models';
 import { CategoriaDialogComponent, CategoriaDialogData } from './categoria-dialog';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-categoria-list',
@@ -34,8 +35,10 @@ import { CategoriaDialogComponent, CategoriaDialogData } from './categoria-dialo
 })
 export class CategoriaListComponent implements AfterViewInit {
   private readonly svc = inject(CategoriaService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
 
   readonly displayedColumns = ['nombre', 'descripcion', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CategoriaRead>([]);
@@ -103,6 +106,7 @@ export class CategoriaListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

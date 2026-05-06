@@ -13,3 +13,20 @@ export const authGuard: CanActivateFn = (route, state) => {
   router.navigate(['/login']);
   return false;
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  if (authService.isAdmin()) {
+    return true;
+  }
+
+  router.navigate(['/app/productos']);
+  return false;
+};
