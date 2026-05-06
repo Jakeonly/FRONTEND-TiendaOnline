@@ -126,15 +126,18 @@ export interface DetalleOrdenUpdate {
 export interface CarritoRead {
   id: UUID;
   usuario_id: UUID;
+  estado: string;
   fecha_creacion: string;
 }
 
 export interface CarritoCreate {
   usuario_id: UUID;
+  estado?: string;
 }
 
 export interface CarritoUpdate {
   usuario_id?: UUID;
+  estado?: string;
 }
 
 // --- 7. DETALLE CARRITO ---

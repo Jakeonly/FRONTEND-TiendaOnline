@@ -1,37 +1,40 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { CarritoCreate, CarritoRead, CarritoUpdate, UUID } from '../../models/api.models';
-import { environment } from '../../../environments/environment'; 
-import { tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/carritos`; 
-
+  private readonly url = `${environment.apiUrl}/carritos`;
 
   list(): Observable<CarritoRead[]> {
-  return this.http.get<any>(`${this.url}/`).pipe(
-    map(response => {
-      // Cubre los 3 casos más comunes de respuesta
-      if (Array.isArray(response))        return response;           // lista directa
-      if (Array.isArray(response?.data))  return response.data;      // { data: [...] }
-      if (Array.isArray(response?.items)) return response.items;     // { items: [...] }
-      return [];                                                      
-    })
-  );
-}
+    return this.http.get<any>(this.url).pipe(
+      map((response: any) => {
+        // Soporta distintas formas de payload de listados.
+        const raw =
+          Array.isArray(response) ? response :
+          Array.isArray(response?.data) ? response.data :
+          Array.isArray(response?.items) ? response.items :
+          Array.isArray(response?.carritos) ? response.carritos :
+          [];
+
+        return raw as CarritoRead[];
+      }),
+    );
+  }
 
   create(data: CarritoCreate): Observable<CarritoRead> {
     return this.http.post<any>(`${this.url}/`, data).pipe(
-      map(response => response.data as CarritoRead)
+      map((response: any) => response as CarritoRead),
     );
   }
 
   update(id: UUID, data: CarritoUpdate): Observable<CarritoRead> {
     return this.http.put<any>(`${this.url}/${id}`, data).pipe(
-      map(response => response.data as CarritoRead)
+      map((response: any) => response as CarritoRead),
     );
   }
 

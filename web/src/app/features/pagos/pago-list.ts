@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { PagoService } from '../../core/services/pago.service';
 import { shortId } from '../../shared/ids';
 import { PagoDialogComponent } from './pago-dialog';
+import { PricePipe } from '../../shared/price.pipe';
 
 @Component({
   selector: 'app-pago-list',
@@ -28,6 +29,7 @@ import { PagoDialogComponent } from './pago-dialog';
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    PricePipe,
   ],
   templateUrl: './pago-list.html',
   styleUrl: './pago-list.scss',

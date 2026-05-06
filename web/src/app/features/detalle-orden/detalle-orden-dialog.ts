@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,7 +40,7 @@ export class DetalleOrdenDialogComponent {
     orden_id: ['', Validators.required],
     producto_id: ['', Validators.required],
     cantidad: [1, [Validators.required, Validators.min(1)]],
-    precio_unitario: [0, [Validators.required, Validators.min(0)]],
+    precio_unitario: ['', [Validators.required, this.numberValidator.bind(this)]],
   });
 
   constructor() {
@@ -50,7 +50,7 @@ export class DetalleOrdenDialogComponent {
         orden_id: r.orden_id,
         producto_id: r.producto_id,
         cantidad: r.cantidad,
-        precio_unitario: r.precio_unitario,
+        precio_unitario: this.formatNumber(r.precio_unitario),
       });
 
       this.form.controls.orden_id.disable();
@@ -62,6 +62,28 @@ export class DetalleOrdenDialogComponent {
     this.dialogRef.close(false);
   }
 
+  private numberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    const parsed = this.parseNumber(String(control.value));
+    return parsed !== null ? null : { invalidNumber: true };
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    try {
+      return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private parseNumber(value: string): number | null {
+    if (!value) return null;
+    const cleaned = value.replace(/\./g, '').replace(/,/g, '.');
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : null;
+  }
+
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -69,9 +91,20 @@ export class DetalleOrdenDialogComponent {
     }
 
     const v = this.form.getRawValue();
+    const precioUnitario = this.parseNumber(String(v.precio_unitario));
+
+    if (precioUnitario === null) {
+      this.snack.open('Precio unitario inválido', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
+    if (precioUnitario <= 0) {
+      this.snack.open('El precio unitario debe ser mayor a 0', 'Cerrar', { duration: 6000 });
+      return;
+    }
 
     if (this.data.mode === 'create') {
-      this.detalleService.create(v).subscribe({
+      this.detalleService.create({ ...v, precio_unitario: precioUnitario }).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
       });
@@ -79,7 +112,7 @@ export class DetalleOrdenDialogComponent {
       const id = this.data.row!.id;
       this.detalleService.update(id, {
         cantidad: v.cantidad,
-        precio_unitario: v.precio_unitario
+        precio_unitario: precioUnitario
       }).subscribe({
         next: () => this.dialogRef.close(true),
         error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),

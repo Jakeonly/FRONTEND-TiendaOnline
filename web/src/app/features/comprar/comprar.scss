@@ -1,0 +1,122 @@
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 800;
+}
+
+.page-head p {
+  margin: 6px 0 0;
+  color: color-mix(in srgb, var(--mat-sys-on-surface) 68%, transparent);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 56px;
+}
+
+.purchase-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.panel {
+  border-radius: 20px;
+  padding: 20px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--mat-sys-surface) 96%, white), var(--mat-sys-surface));
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline) 12%, transparent);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.panel h2 {
+  margin: 0 0 16px;
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.verify-button {
+  align-self: start;
+  min-height: 56px;
+}
+
+.info-card,
+.summary-card {
+  margin-top: 18px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--mat-sys-primary-container) 18%, white);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
+}
+
+.info-card {
+  padding: 16px;
+}
+
+.info-card__row,
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.info-card__row span,
+.summary-row span {
+  color: color-mix(in srgb, var(--mat-sys-on-surface) 68%, transparent);
+}
+
+.coupon-state {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #2563eb 14%, transparent);
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.table-wrap {
+  overflow: auto;
+  border-radius: 16px;
+  background: var(--mat-sys-surface);
+}
+
+.empty-state {
+  padding: 20px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--mat-sys-outline-variant) 30%, transparent);
+  color: color-mix(in srgb, var(--mat-sys-on-surface) 70%, transparent);
+}
+
+.summary-card {
+  padding: 18px;
+}
+
+.process-button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+  .purchase-grid {
+    grid-template-columns: 1fr;
+  }
+}

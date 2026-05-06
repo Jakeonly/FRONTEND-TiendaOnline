@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -49,8 +49,8 @@ export class OrdenDialogComponent {
 
   readonly form = this.fb.nonNullable.group({
     usuario_id: ['', Validators.required],
-    total: [0, [Validators.required, Validators.min(0)]],
-    estado: ['pendiente', Validators.required],
+    total: ['', [Validators.required, this.numberValidator.bind(this)]],
+    estado: ['Pendiente', Validators.required],
     descuento_codigo: [''],
   });
 
@@ -64,7 +64,7 @@ export class OrdenDialogComponent {
       const r = this.data.row;
       this.form.patchValue({
         usuario_id: r.usuario_id,
-        total: r.total,
+        total: this.formatNumber(r.total),
         estado: r.estado,
       });
       this.form.controls.usuario_id.disable();
@@ -80,6 +80,28 @@ export class OrdenDialogComponent {
 
   cancel(): void {
     this.dialogRef.close(false);
+  }
+
+  private numberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    const parsed = this.parseNumber(String(control.value));
+    return parsed !== null ? null : { invalidNumber: true };
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    try {
+      return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private parseNumber(value: string): number | null {
+    if (!value) return null;
+    const cleaned = value.replace(/\./g, '').replace(/,/g, '.');
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : null;
   }
 
   verificarCupon(): void {
@@ -101,13 +123,24 @@ export class OrdenDialogComponent {
     }
 
     const v = this.form.getRawValue();
+    const totalNum = this.parseNumber(String(v.total));
+
+    if (totalNum === null) {
+      this.snack.open('Total inválido', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
+    if (totalNum <= 0) {
+      this.snack.open('El total debe ser mayor a 0', 'Cerrar', { duration: 6000 });
+      return;
+    }
 
     if (this.data.mode === 'create') {
       const descuentoCodigo = v.descuento_codigo.trim();
       if (!descuentoCodigo) {
         this.ordenService.create({
           usuario_id: v.usuario_id,
-          total: v.total,
+          total: totalNum,
           estado: v.estado,
         }).subscribe({
           next: () => this.dialogRef.close(true),
@@ -119,7 +152,7 @@ export class OrdenDialogComponent {
       this.buscarCuponVigentePorCodigo(descuentoCodigo, (descuento) => {
         this.ordenService.create({
           usuario_id: v.usuario_id,
-          total: v.total,
+          total: totalNum,
           estado: v.estado,
           descuento_id: descuento.id,
         }).subscribe({
@@ -136,7 +169,7 @@ export class OrdenDialogComponent {
 
     if (!descuentoCodigo) {
       const body: OrdenUpdate = {
-        total: v.total,
+        total: totalNum,
         estado: v.estado,
       };
 
@@ -149,7 +182,7 @@ export class OrdenDialogComponent {
 
     this.buscarCuponVigentePorCodigo(descuentoCodigo, (descuento) => {
       const body: OrdenUpdate = {
-        total: v.total,
+        total: totalNum,
         estado: v.estado,
         descuento_id: descuento.id,
       };

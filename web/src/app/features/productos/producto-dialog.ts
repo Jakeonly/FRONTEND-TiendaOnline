@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -46,8 +46,8 @@ export class ProductoDialogComponent {
   readonly form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
     descripcion: [''],
-    precio: ['', Validators.required],
-    stock: ['', Validators.required],
+    precio: ['', [Validators.required, this.numberValidator.bind(this)]],
+    stock: ['', [Validators.required, this.numberValidator.bind(this)]],
     categoria_id: ['', Validators.required],
   });
 
@@ -64,6 +64,12 @@ export class ProductoDialogComponent {
         categoria_id: r.categoria_id,
       });
     }
+  }
+
+  private numberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    const parsed = this.parseNumber(String(control.value));
+    return parsed !== null ? null : { invalidNumber: true };
   }
 
   private formatNumber(value: number | null | undefined, minFrac = 0): string {
@@ -97,41 +103,67 @@ export class ProductoDialogComponent {
   }
 
   save(): void {
+    if (this.form.invalid) {
+      console.warn('Formulario inválido:', this.form.errors);
+      this.snack.open('Por favor, completa todos los campos requeridos correctamente', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
     const raw = this.form.getRawValue();
 
-    const precioNum = this.parseNumber(raw.precio);
-    const stockNum = this.parseNumber(raw.stock);
+    const precioNum = this.parseNumber(String(raw.precio));
+    const stockNum = this.parseNumber(String(raw.stock));
 
     if (precioNum === null || stockNum === null) {
+      console.error('Error al parsear precio o stock', { precio: raw.precio, stock: raw.stock });
       this.snack.open('Precio o stock inválido', 'Cerrar', { duration: 6000 });
       return;
     }
 
-    if (precioNum < 0 || stockNum < 0) {
-      this.snack.open('Precio y stock deben ser >= 0', 'Cerrar', { duration: 6000 });
+    if (precioNum <= 0) {
+      this.snack.open('Precio debe ser mayor a 0', 'Cerrar', { duration: 6000 });
+      return;
+    }
+
+    if (stockNum < 0) {
+      this.snack.open('Stock no puede ser negativo', 'Cerrar', { duration: 6000 });
       return;
     }
 
     const payload = {
-      nombre: raw.nombre,
-      descripcion: raw.descripcion || undefined,
+      nombre: raw.nombre.trim(),
+      descripcion: raw.descripcion?.trim() || undefined,
       precio: precioNum,
       stock: Math.trunc(stockNum),
       categoria_id: raw.categoria_id,
     } as ProductoUpdate;
 
+    console.log('Guardando producto:', this.data.mode, payload);
+
     if (this.data.mode === 'create') {
       this.svc.create(payload as any).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+        next: () => {
+          console.log('Producto creado exitosamente');
+          this.dialogRef.close(true);
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Error al crear producto:', err);
+          this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+        },
       });
       return;
     }
 
     const id = this.data.row!.id;
     this.svc.update(id, payload).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
+      next: () => {
+        console.log('Producto actualizado exitosamente');
+        this.dialogRef.close(true);
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al actualizar producto:', err);
+        this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 });
+      },
     });
   }
 

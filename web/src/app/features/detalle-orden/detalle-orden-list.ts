@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { filter } from 'rxjs/operators';
 
@@ -14,6 +15,8 @@ import { DetalleOrdenService } from '../../core/services/detalle-orden.service';
 import { DetalleOrdenRead } from '../../models/api.models';
 import { DetalleOrdenDialogComponent, DetalleOrdenDialogData } from './detalle-orden-dialog';
 import { shortId } from '../../shared/ids';
+import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-detalle-orden-list',
@@ -22,19 +25,23 @@ import { shortId } from '../../shared/ids';
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    PricePipe,
   ],
   templateUrl: './detalle-orden-list.html',
   styleUrl: './detalle-orden-list.scss',
 })
 export class DetalleOrdenListComponent implements AfterViewInit {
   private readonly detalleService = inject(DetalleOrdenService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  readonly canManage = this.authService.isAdmin();
   readonly shortId = shortId;
 
   readonly displayedColumns = [
@@ -50,10 +57,53 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   readonly dataSource = new MatTableDataSource<DetalleOrdenRead>([]);
   loading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private paginatorRef?: MatPaginator;
+  private sortRef?: MatSort;
+
+  @ViewChild(MatPaginator)
+  set paginator(value: MatPaginator | undefined) {
+    this.paginatorRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
+
+  @ViewChild(MatSort)
+  set sort(value: MatSort | undefined) {
+    this.sortRef = value;
+    if (value) {
+      this.attachTableHelpers();
+    }
+  }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // Los setters ya configuran los helpers
+  }
+
+  private attachTableHelpers(): void {
+    if (!this.paginatorRef || !this.sortRef) return;
+
+    this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
+      switch (columnName) {
+        case 'id':
+          return row.id ?? '';
+        case 'orden_id':
+          return row.orden_id ?? '';
+        case 'producto_id':
+          return row.producto_id ?? '';
+        case 'cantidad':
+          return Number(row.cantidad) || 0;
+        case 'precio_unitario':
+          return Number(row.precio_unitario) || 0;
+        case 'subtotal':
+          return Number(row.subtotal) || 0;
+        default:
+          return '';
+      }
+    };
+
+    this.dataSource.paginator = this.paginatorRef;
+    this.dataSource.sort = this.sortRef;
   }
 
   constructor() {
@@ -75,6 +125,7 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 

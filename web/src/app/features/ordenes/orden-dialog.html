@@ -15,17 +15,23 @@
     <!-- Total de la Orden -->
     <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Total</mat-label>
-      <input matInput type="number" min="0" formControlName="total" />
+      <input matInput type="text" inputmode="decimal" formControlName="total" />
       <span matTextPrefix>$&nbsp;</span>
+      @if (form.get('total')?.hasError('required')) {
+        <mat-error>Total requerido</mat-error>
+      }
+      @if (form.get('total')?.hasError('invalidNumber')) {
+        <mat-error>Formato de número inválido</mat-error>
+      }
     </mat-form-field>
 
     <!-- Estado de la Orden -->
     <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Estado</mat-label>
       <mat-select formControlName="estado">
-        <mat-option value="pendiente">Pendiente</mat-option>
-        <mat-option value="pagado">Pagado</mat-option>
-        <mat-option value="cancelado">Cancelado</mat-option>
+        <mat-option value="Pendiente">Pendiente</mat-option>
+        <mat-option value="Pagada">Pagada</mat-option>
+        <mat-option value="Cancelado">Cancelado</mat-option>
       </mat-select>
     </mat-form-field>
 

@@ -31,17 +31,18 @@ export class MainLayoutComponent {
   private readonly router = inject(Router);
   readonly sidebarCollapsed = signal(false);
 
+  private readonly adminOnlyPaths = new Set(['carritos', 'descuentos', 'usuarios', 'pagos']);
+
   readonly menuItems = [
-  { path: 'productos', label: 'Productos', icon: 'inventory_2' },
-  { path: 'categorias', label: 'Categorías', icon: 'category' },
-  { path: 'carritos', label: 'Mi Carrito', icon: 'shopping_cart' },
-  { path: 'detalle-carrito', label: 'Detalles Carrito', icon: 'list_alt' }, // Nueva
-  { path: 'ordenes', label: 'Mis Órdenes', icon: 'receipt_long' },
-  { path: 'detalle-orden', label: 'Detalles Orden', icon: 'Fact_check' },   // Nueva
-  { path: 'descuentos', label: 'Cupones', icon: 'sell' },
-  { path: 'usuarios', label: 'Usuarios', icon: 'group' },
-  { path: 'pagos', label: 'Pagos', icon: 'payments' },
-  ];
+    { path: 'productos', label: 'Productos', icon: 'inventory_2' },
+    { path: 'categorias', label: 'Categorías', icon: 'category' },
+    { path: 'carritos', label: 'Carritos', icon: 'shopping_cart' },
+    { path: 'ordenes', label: 'Órdenes', icon: 'receipt_long' },
+    { path: 'descuentos', label: 'Cupones', icon: 'sell' },
+    { path: 'usuarios', label: 'Usuarios', icon: 'group' },
+    { path: 'pagos', label: 'Pagos', icon: 'payments' },
+    { path: 'comprar', label: 'Comprar', icon: 'shopping_bag' },
+  ].filter((item) => this.authService.isAdmin() || !this.adminOnlyPaths.has(item.path));
 
   logout(): void {
     this.authService.logout();

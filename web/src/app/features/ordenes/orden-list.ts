@@ -18,6 +18,8 @@ import { OrdenRead, UsuarioRead } from '../../models/api.models';
 import { OrdenDialogComponent, OrdenDialogData } from './orden-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { PricePipe } from '../../shared/price.pipe';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-orden-list',
@@ -33,6 +35,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    PricePipe,
   ],
   templateUrl: './orden-list.html',
   styleUrl: './orden-list.scss',
@@ -40,6 +43,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
 export class OrdenListComponent implements AfterViewInit {
   private readonly ordenService = inject(OrdenService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
@@ -118,6 +122,10 @@ export class OrdenListComponent implements AfterViewInit {
     this.reload();
   }
 
+  get canManage(): boolean {
+    return this.authService.isAdmin();
+  }
+
   reload(): void {
     this.loading = true;
     forkJoin({
@@ -125,9 +133,17 @@ export class OrdenListComponent implements AfterViewInit {
       usuarios: this.usuarioService.list(),
     }).subscribe({
       next: ({ ordenes, usuarios }) => {
+        const usuarioActual = this.authService.getCurrentUser();
+        const puedeVerTodas = this.authService.isAdmin();
+        const ordenesFiltradas = puedeVerTodas
+          ? ordenes
+          : ordenes.filter(
+              (orden) => !!usuarioActual && orden.usuario_id === usuarioActual.id,
+            );
+
         this.usuariosPorId.clear();
         usuarios.forEach((usuario: UsuarioRead) => this.usuariosPorId.set(usuario.id, usuario.nombre_completo));
-        this.dataSource.data = ordenes;
+        this.dataSource.data = ordenesFiltradas;
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -138,6 +154,7 @@ export class OrdenListComponent implements AfterViewInit {
   }
 
   nuevo(): void {
+    if (!this.canManage) return;
     this.openDialog({ mode: 'create' });
   }
 
@@ -176,6 +193,26 @@ export class OrdenListComponent implements AfterViewInit {
 
   getUsuarioNombre(usuarioId: string): string {
     return this.usuariosPorId.get(usuarioId) ?? shortId(usuarioId);
+  }
+
+  estadoClass(estado: string | null | undefined): string {
+    const normalized = this.normalizeEstado(estado);
+    if (normalized === 'pagada') return 'pagada';
+    if (normalized === 'pendiente') return 'pendiente';
+    if (normalized === 'cancelado') return 'cancelado';
+    return '';
+  }
+
+  estadoLabel(estado: string | null | undefined): string {
+    const normalized = this.normalizeEstado(estado);
+    if (normalized === 'pagada') return 'Pagada';
+    if (normalized === 'pendiente') return 'Pendiente';
+    if (normalized === 'cancelado') return 'Cancelada';
+    return String(estado ?? '');
+  }
+
+  private normalizeEstado(estado: string | null | undefined): string {
+    return String(estado ?? '').trim().toLowerCase();
   }
 
   private openDialog(data: OrdenDialogData): void {

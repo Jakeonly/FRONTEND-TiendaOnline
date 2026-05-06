@@ -3,7 +3,10 @@
   <form [formGroup]="form" class="grid">
     <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
       <mat-label>Nombre</mat-label>
-      <input matInput formControlName="nombre" />
+      <input matInput formControlName="nombre" required />
+      @if (form.get('nombre')?.hasError('required')) {
+        <mat-error>El nombre es requerido</mat-error>
+      }
     </mat-form-field>
     
     <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
@@ -13,22 +16,37 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Precio</mat-label>
-      <input matInput type="text" inputmode="decimal" formControlName="precio" />
+      <input matInput type="text" inputmode="decimal" formControlName="precio" required />
       <span matTextPrefix>$&nbsp;</span>
+      @if (form.get('precio')?.hasError('required')) {
+        <mat-error>Precio requerido</mat-error>
+      }
+      @if (form.get('precio')?.hasError('invalidNumber')) {
+        <mat-error>Formato de número inválido</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Stock</mat-label>
-      <input matInput type="number" min="0" step="1" formControlName="stock" />
+      <input matInput type="number" min="0" step="1" formControlName="stock" required />
+      @if (form.get('stock')?.hasError('required')) {
+        <mat-error>Stock requerido</mat-error>
+      }
+      @if (form.get('stock')?.hasError('invalidNumber')) {
+        <mat-error>Formato de número inválido</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="span-2">
       <mat-label>Categoría</mat-label>
-      <mat-select formControlName="categoria_id">
+      <mat-select formControlName="categoria_id" required>
         @for (categoria of categorias; track categoria.id) {
           <mat-option [value]="categoria.id">{{ categoria.nombre }}</mat-option>
         }
       </mat-select>
+      @if (form.get('categoria_id')?.hasError('required')) {
+        <mat-error>Categoría requerida</mat-error>
+      }
       <mat-hint>Se guarda el id de la categoría seleccionada</mat-hint>
     </mat-form-field>
   </form>
@@ -36,5 +54,7 @@
 
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancelar</button>
-  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">Guardar</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="form.invalid">
+    Guardar
+  </button>
 </mat-dialog-actions>

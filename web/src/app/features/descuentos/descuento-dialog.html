@@ -14,8 +14,14 @@
 
     <mat-form-field style="padding-top: 1%;" appearance="outline">
       <mat-label>Monto Fijo</mat-label>
-      <input matInput type="number" formControlName="monto_fijo" />
+      <input matInput type="text" inputmode="decimal" formControlName="monto_fijo" />
       <span matTextPrefix>$&nbsp;</span>
+      @if (form.get('monto_fijo')?.hasError('required')) {
+        <mat-error>Monto fijo requerido</mat-error>
+      }
+      @if (form.get('monto_fijo')?.hasError('invalidNumber')) {
+        <mat-error>Formato de número inválido</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field style="padding-top: 1%;" appearance="outline">
