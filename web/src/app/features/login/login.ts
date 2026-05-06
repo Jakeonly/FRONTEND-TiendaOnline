@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/auth/auth.service';
@@ -24,7 +23,6 @@ import { AuthService } from '../../core/auth/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatDialogModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
@@ -33,7 +31,6 @@ export class LoginComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private dialog = inject(MatDialog);
 
   readonly loginForm = this.fb.group({
     correo_electronico: ['', [Validators.required, Validators.email]],
@@ -49,7 +46,13 @@ export class LoginComponent {
   }
 
   onLogin() {
-    if (this.loginForm.invalid || this.isSubmitting) return;
+    if (this.isSubmitting) return;
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.errorMessage = 'Completa un correo válido y la contraseña antes de iniciar sesión.';
+      return;
+    }
 
     this.isSubmitting = true;
     this.errorMessage = '';
@@ -67,59 +70,56 @@ export class LoginComponent {
       },
       error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;
-        const errorMessage = err.error?.message ?? err.error?.detail ?? 'Credenciales incorrectas. Intenta de nuevo.';
-        this.showErrorDialog(errorMessage);
+        this.errorMessage = this.resolveLoginErrorMessage(err);
       }
     });
   }
 
-  private showErrorDialog(message: string): void {
-    this.dialog.open(ErrorDialogComponent, {
-      width: '400px',
-      disableClose: false,
-      data: { message }
-    });
-  }
-}
+  private resolveLoginErrorMessage(err: HttpErrorResponse): string {
+    const fallbackMessage = 'No se pudo iniciar sesión. Verifica tus datos e inténtalo otra vez.';
+    const body = err.error;
 
-@Component({
-  selector: 'app-error-dialog',
-  standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule],
-  template: `
-    <div class="error-dialog">
-      <div class="error-header">
-        <h2 mat-dialog-title>Error en el inicio de sesión</h2>
-      </div>
-      <mat-dialog-content>
-        <p class="error-message">{{ data.message }}</p>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button mat-button (click)="closeDialog()">Cerrar</button>
-      </mat-dialog-actions>
-    </div>
-  `,
-  styles: [`
-    .error-dialog {
-      padding: 0;
+    if (typeof body === 'string' && body.trim()) {
+      return body;
     }
-    .error-header h2 {
-      color: #d32f2f;
-      margin: 0;
-    }
-    .error-message {
-      color: #666;
-      line-height: 1.5;
-      margin: 16px 0;
-    }
-  `]
-})
-export class ErrorDialogComponent {
-  private dialogRef = inject(MatDialogRef<ErrorDialogComponent>);
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { message: string }) {}
+    if (!body || typeof body !== 'object') {
+      return err.message || fallbackMessage;
+    }
 
-  closeDialog(): void {
-    this.dialogRef.close();
+    const payload = body as Record<string, unknown>;
+
+    const messageCandidates = [
+      payload['message'],
+      payload['detail'],
+      typeof payload['error'] === 'object' && payload['error'] !== null
+        ? (payload['error'] as Record<string, unknown>)['message']
+        : undefined,
+    ];
+
+    for (const candidate of messageCandidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate;
+      }
+    }
+
+    const nestedError = payload['error'];
+    if (nestedError && typeof nestedError === 'object') {
+      const nested = nestedError as Record<string, unknown>;
+      const details = nested['details'];
+
+      if (Array.isArray(details) && details.length > 0) {
+        const firstDetail = details[0];
+        if (firstDetail && typeof firstDetail === 'object') {
+          const detailObject = firstDetail as Record<string, unknown>;
+          const detailMessage = detailObject['msg'] ?? detailObject['message'];
+          if (typeof detailMessage === 'string' && detailMessage.trim()) {
+            return detailMessage;
+          }
+        }
+      }
+    }
+
+    return fallbackMessage;
   }
 }

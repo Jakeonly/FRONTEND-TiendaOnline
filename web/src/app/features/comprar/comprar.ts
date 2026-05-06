@@ -145,14 +145,16 @@ export class ComprarComponent implements OnInit {
       descuentos: this.descuentoService.list(),
     }).subscribe({
       next: ({ carritos, usuarios, productos, descuentos }) => {
-        // Mostrar solo carritos del usuario actual y pendientes de pago.
+        // Admin ve todos los carritos; cliente solo ve los suyos pendientes.
         const usuarioActual = this.authService.getCurrentUser();
-        this.carritos = carritos.filter(
-          (carrito) =>
-            this.esEstadoPendiente(carrito.estado) &&
-            !!usuarioActual &&
-            carrito.usuario_id === usuarioActual.id,
-        );
+        const esAdmin = this.authService.isAdmin();
+        this.carritos = carritos.filter((carrito) => {
+          if (esAdmin) {
+            return true;
+          }
+
+          return !!usuarioActual && carrito.usuario_id === usuarioActual.id && this.esEstadoPendiente(carrito.estado);
+        });
         this.usuarios = usuarios;
         this.productos = productos;
         this.descuentos = descuentos;
@@ -273,39 +275,73 @@ export class ComprarComponent implements OnInit {
     this.processing = true;
 
     try {
-      const ordenPayload: OrdenCreate = {
-        usuario_id: this.carritoSeleccionado.usuario_id,
-        total,
-        estado: 'Pendiente',
-        descuento_id: descuento?.id,
-      };
+        // Calcular total aplicando descuento si existe
+        const totalFinal = this.calcularTotalConDescuento(total, descuento);
 
-      const ordenCreada = await firstValueFrom(this.ordenService.create(ordenPayload));
-
-      for (const item of this.items) {
-        await firstValueFrom(
-          this.detalleOrdenService.create({
-            orden_id: ordenCreada.id,
-            producto_id: item.productoId,
-            cantidad: item.cantidad,
-            precio_unitario: item.precioUnitario,
-            subtotal: item.subtotal,
-          } as any),
-        );
-      }
-
-      if (registrarPago) {
-        const pagoPayload: PagoCreate = {
-          orden_id: ordenCreada.id,
-          monto: Number(ordenCreada.total),
-          metodo: this.form.controls.metodo_pago.value,
-          estado: 'Pagada',
+        // Attach carrito_id to the order payload so backend knows the origin
+        const ordenPayload: OrdenCreate = {
+          usuario_id: this.carritoSeleccionado.usuario_id,
+          carrito_id: this.carritoSeleccionado.id,
+          total: totalFinal,
+          estado: 'Pendiente',
+          descuento_id: descuento?.id,
         };
 
-        await firstValueFrom(this.pagoService.create(pagoPayload));
-        await firstValueFrom(this.ordenService.update(ordenCreada.id, { estado: 'Pagada' }));
-        await firstValueFrom(this.carritoService.update(this.carritoSeleccionado.id, { estado: 'Pagado' }));
-      }
+        // Buscar si ya existe una orden pendiente para este carrito
+        const todasOrdenes = await firstValueFrom(this.ordenService.list());
+        const ordenExistente = todasOrdenes.find(
+          (o) => String(o.carrito_id) === String(this.carritoSeleccionado!.id) && this.esEstadoPendiente(o.estado),
+        );
+
+        let ordenFinal = null as any;
+
+        if (ordenExistente) {
+          // Actualizar la orden pendiente existente en lugar de crear una nueva
+          ordenFinal = await firstValueFrom(
+            this.ordenService.update(ordenExistente.id, {
+              total: totalFinal,
+              descuento_id: descuento?.id ?? null,
+              estado: registrarPago ? 'Pagada' : ordenExistente.estado,
+            }),
+          );
+        } else {
+          // Crear nueva orden y agregar detalles
+          const ordenCreada = await firstValueFrom(this.ordenService.create(ordenPayload));
+
+          for (const item of this.items) {
+            await firstValueFrom(
+              this.detalleOrdenService.create({
+                orden_id: ordenCreada.id,
+                producto_id: item.productoId,
+                cantidad: item.cantidad,
+                precio_unitario: item.precioUnitario,
+                subtotal: item.subtotal,
+              } as any),
+            );
+          }
+
+          ordenFinal = ordenCreada;
+        }
+
+        if (registrarPago) {
+          const pagoPayload: PagoCreate = {
+            orden_id: ordenFinal.id,
+            monto: Number(ordenFinal.total ?? totalFinal),
+            metodo: this.form.controls.metodo_pago.value,
+            estado: 'Pagada',
+          };
+
+          await firstValueFrom(this.pagoService.create(pagoPayload));
+
+          // Asegurarse de que la orden quede marcada como pagada
+          if (!this.esEstadoPendiente(ordenFinal.estado)) {
+            // Si ya está pagada, no es necesario actualizar
+          } else {
+            await firstValueFrom(this.ordenService.update(ordenFinal.id, { estado: 'Pagada' }));
+          }
+
+          await firstValueFrom(this.carritoService.update(this.carritoSeleccionado.id, { estado: 'Pagado' }));
+        }
 
       this.snack.open('Compra registrada correctamente', 'OK', { duration: 4000 });
       this.form.patchValue({
@@ -361,6 +397,23 @@ export class ComprarComponent implements OnInit {
     }
 
     return null;
+  }
+
+  private calcularTotalConDescuento(total: number, descuento: DescuentoRead | null): number {
+    if (!descuento) return Number(total.toFixed(2));
+
+    const porcentaje = descuento.porcentaje ?? null;
+    const montoFijo = descuento.monto_fijo ?? null;
+
+    let descuentoPorcentaje = 0;
+    if (porcentaje !== null && typeof porcentaje === 'number') {
+      descuentoPorcentaje = total * (porcentaje / 100);
+    }
+
+    const descuentoAplicado = Math.max(descuentoPorcentaje, montoFijo ?? 0);
+    let totalFinal = total - descuentoAplicado;
+    if (totalFinal < 0) totalFinal = 0;
+    return Number(totalFinal.toFixed(2));
   }
 
   private buscarCuponVigentePorCodigo(codigo: string): DescuentoRead | null {

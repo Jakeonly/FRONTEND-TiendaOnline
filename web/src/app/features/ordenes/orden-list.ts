@@ -55,6 +55,7 @@ export class OrdenListComponent implements AfterViewInit {
     'usuario_nombre',
     'total',
     'estado',
+    'carrito_id',
     'fecha_creacion',
     'acciones',
   ];
@@ -93,6 +94,8 @@ export class OrdenListComponent implements AfterViewInit {
           return this.normalizeTotal(row.total);
         case 'estado':
           return row.estado ?? '';
+        case 'carrito_id':
+          return row.carrito_id ?? '';
         case 'fecha_creacion':
           return new Date(row.fecha_creacion ?? 0).getTime();
         default:
@@ -186,6 +189,36 @@ export class OrdenListComponent implements AfterViewInit {
       this.snack.open('ID de orden copiado', 'OK', { duration: 2500 });
     } catch {
       this.snack.open('No se pudo copiar el ID de orden', 'Cerrar', { duration: 4000 });
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+  copiarCarritoId(row: OrdenRead): void {
+    const texto = String(row.carrito_id ?? '');
+    if (!texto) return;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(texto)
+        .then(() => this.snack.open('ID de carrito copiado', 'OK', { duration: 2500 }))
+        .catch(() => this.snack.open('No se pudo copiar el ID de carrito', 'Cerrar', { duration: 4000 }));
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      document.execCommand('copy');
+      this.snack.open('ID de carrito copiado', 'OK', { duration: 2500 });
+    } catch {
+      this.snack.open('No se pudo copiar el ID de carrito', 'Cerrar', { duration: 4000 });
     } finally {
       document.body.removeChild(textarea);
     }

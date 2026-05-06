@@ -7,6 +7,10 @@
     <mat-card-content>
       <!-- Formulario único: Directo a la autenticación real -->
       <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+
+        <div *ngIf="errorMessage" class="error-banner" role="alert">
+          {{ errorMessage }}
+        </div>
         
         <mat-form-field appearance="outline" class="full">
           <mat-label>Correo Electrónico</mat-label>

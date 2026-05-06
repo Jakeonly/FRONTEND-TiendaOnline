@@ -54,6 +54,28 @@
         </td>
       </ng-container>
 
+      <!-- Carrito Column -->
+      <ng-container matColumnDef="carrito_id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">ID Carrito</th>
+        <td mat-cell *matCellDef="let r" class="id-cell">
+          @if (r.carrito_id) {
+            <span>{{ shortId(r.carrito_id) }}</span>
+            <button
+              mat-icon-button
+              type="button"
+              class="copy-button"
+              (click)="$event.stopPropagation(); copiarCarritoId(r)"
+              aria-label="Copiar ID de carrito"
+              matTooltip="Copiar ID de carrito"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          } @else {
+            <span>Sin carrito</span>
+          }
+        </td>
+      </ng-container>
+
       <!-- Fecha Column -->
       <ng-container matColumnDef="fecha_creacion">
         <th mat-header-cell *matHeaderCellDef mat-sort-header start="desc">Fecha</th>

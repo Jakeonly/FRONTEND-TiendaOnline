@@ -25,7 +25,7 @@
         <a 
           mat-list-item 
           class="nav-item" 
-          [routerLink]="item.path" 
+          [routerLink]="['/app', item.path]" 
           routerLinkActive="active-link"
           [matTooltip]="sidebarCollapsed() ? item.label : ''"
           matTooltipPosition="right"
