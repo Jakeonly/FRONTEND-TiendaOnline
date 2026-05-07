@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -23,6 +24,8 @@ import { UsuarioService } from '../../core/services/usuario.service';
 import { PricePipe } from '../../shared/price.pipe';
 import { AuthService } from '../../core/auth/auth.service';
 import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
+import { MatNativeDateModule } from '@angular/material/core';
+import { filterByDateRange } from '../../shared/date-range.utils';
 
 @Component({
   selector: 'app-orden-list',
@@ -39,8 +42,10 @@ import { createTextAndDateFilterPredicate, serializeSearchState } from '../../sh
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDatepickerModule,
     MatTooltipModule,
     PricePipe,
+    MatNativeDateModule,
   ],
   templateUrl: './orden-list.html',
   styleUrl: './orden-list.scss',
@@ -53,7 +58,7 @@ export class OrdenListComponent implements AfterViewInit {
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
   readonly usuariosPorId = new Map<string, string>();
-
+  private fechaFiltro: Date | null = null;
   // Columnas ajustadas a tu dominio real
   readonly displayedColumns = [
     'id',
@@ -68,10 +73,9 @@ export class OrdenListComponent implements AfterViewInit {
   readonly dataSource = new MatTableDataSource<OrdenRead>([]);
 
   loading = true;
-  searchOpen = false;
-  dateSearchOpen = false;
   searchValue = '';
-  selectedDate = '';
+  
+  private allOrdenes: OrdenRead[] = [];
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -137,29 +141,33 @@ export class OrdenListComponent implements AfterViewInit {
     );
     this.reload();
   }
-
-  filtrarTabla(event: Event): void {
-    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
-    this.applyFilters();
-  }
-
-  filtrarFecha(event: Event): void {
-    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
-    this.applyFilters();
-  }
-
-  toggleSearch(): void {
-    this.searchOpen = !this.searchOpen;
-  }
-
-  toggleDateSearch(): void {
-    this.dateSearchOpen = !this.dateSearchOpen;
-  }
-
-  private applyFilters(): void {
-    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
-    this.dataSource.paginator?.firstPage();
-  }
+  
+  onDateSelected(fecha: Date | null): void {
+      this.fechaFiltro = fecha;
+      this.applyFilters();
+    }
+  
+    onTextSearch(value: string): void {
+      this.searchValue = value.trim().toLowerCase();
+      this.applyFilters();
+    }
+  
+    private applyFilters(): void {
+      let filtered = this.fechaFiltro
+        ? filterByDateRange(this.allOrdenes, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+        : [...this.allOrdenes];
+  
+      if (this.searchValue) {
+        filtered = filtered.filter((row) =>
+          [row.usuario_id, row.total, row.estado ,row.carrito_id ,row.fecha_creacion]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(this.searchValue))
+        );
+      }
+  
+      this.dataSource.data = filtered;
+      this.dataSource.paginator?.firstPage();
+    }
 
   get canManage(): boolean {
     return this.authService.isAdmin();
@@ -182,6 +190,7 @@ export class OrdenListComponent implements AfterViewInit {
 
         this.usuariosPorId.clear();
         usuarios.forEach((usuario: UsuarioRead) => this.usuariosPorId.set(usuario.id, usuario.nombre_completo));
+        this.allOrdenes = ordenesFiltradas;
         this.dataSource.data = ordenesFiltradas;
         this.loading = false;
       },

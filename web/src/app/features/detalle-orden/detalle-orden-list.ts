@@ -61,7 +61,6 @@ export class DetalleOrdenListComponent implements AfterViewInit {
   
   readonly dataSource = new MatTableDataSource<DetalleOrdenRead>([]);
   loading = true;
-  searchOpen = false;
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -121,10 +120,6 @@ export class DetalleOrdenListComponent implements AfterViewInit {
     const value = (event.target as HTMLInputElement | null)?.value ?? '';
     this.dataSource.filter = value.trim();
     this.dataSource.paginator?.firstPage();
-  }
-
-  toggleSearch(): void {
-    this.searchOpen = !this.searchOpen;
   }
 
   reload(): void {

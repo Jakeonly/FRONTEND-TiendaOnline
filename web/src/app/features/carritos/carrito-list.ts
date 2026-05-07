@@ -6,6 +6,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -20,6 +22,7 @@ import { CarritoDialogComponent, CarritoDialogData } from './carrito-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { filterByDateRange } from '../../shared/date-range.utils';
 import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
@@ -34,6 +37,8 @@ import { createTextAndDateFilterPredicate, serializeSearchState } from '../../sh
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -54,10 +59,10 @@ export class CarritoListComponent implements AfterViewInit {
   readonly displayedColumns = ['id', 'usuario_nombre', 'estado', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CarritoRead>([]);
   loading = true;
-  searchOpen = false;
-  dateSearchOpen = false;
-  searchValue = '';
-  selectedDate = '';
+  private searchValue = '';
+  private fechaFiltro: Date | null = null;
+  
+  private allCarritos: CarritoRead[] = [];
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -117,23 +122,45 @@ export class CarritoListComponent implements AfterViewInit {
     this.applyFilters();
   }
 
-  filtrarFecha(event: Event): void {
-    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
+  onDateSelected(fecha: Date | null): void {
+    this.fechaFiltro = fecha;
     this.applyFilters();
   }
 
-  toggleSearch(): void {
-    this.searchOpen = !this.searchOpen;
+  onTextSearch(value: string): void {
+    this.searchValue = value.trim().toLowerCase();
+    this.applyFilters();
   }
 
-  toggleDateSearch(): void {
-    this.dateSearchOpen = !this.dateSearchOpen;
-  }
-
+  /**
   private applyFilters(): void {
-    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
+    let filtered = this.fechaFiltro
+    // Aplicar filtro de búsqueda de texto
+    this.dataSource.data = filtered;
+    if (this.searchValue.trim()) {
+      this.dataSource.filter = serializeSearchState(this.searchValue.trim(), '');
+    } else {
+      this.dataSource.filter = '';
+    }
     this.dataSource.paginator?.firstPage();
   }
+  **/
+  private applyFilters(): void {
+      let filtered = this.fechaFiltro
+        ? filterByDateRange(this.allCarritos, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+        : [...this.allCarritos];
+  
+      if (this.searchValue) {
+        filtered = filtered.filter((row) =>
+          [row.usuario_id, row.estado, row.fecha_creacion]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(this.searchValue))
+        );
+      }
+  
+      this.dataSource.data = filtered;
+      this.dataSource.paginator?.firstPage();
+    }
 
   reload(): void {
     this.loading = true;
@@ -146,6 +173,7 @@ export class CarritoListComponent implements AfterViewInit {
         usuarios.forEach((usuario: UsuarioRead) =>
           this.usuariosPorId.set(usuario.id, usuario.nombre_completo)
         );
+        this.allCarritos = carritos;
         this.dataSource.data = carritos;
         this.loading = false;
       },

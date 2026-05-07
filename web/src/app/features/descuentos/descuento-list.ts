@@ -5,6 +5,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -18,6 +19,8 @@ import { DescuentoRead } from '../../models/api.models';
 import { DescuentoDialogComponent, DescuentoDialogData } from './descuento-dialog';
 import { PricePipe } from '../../shared/price.pipe';
 import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
+import { MatNativeDateModule } from '@angular/material/core';
+import { filterByDateRange } from '../../shared/date-range.utils';
 
 @Component({
   selector: 'app-descuento-list',
@@ -32,9 +35,11 @@ import { createTextAndDateFilterPredicate, serializeSearchState } from '../../sh
     MatFormFieldModule,
     MatInputModule,
     MatDialogModule,
+    MatDatepickerModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     PricePipe,
+    MatNativeDateModule,
   ],
   templateUrl: './descuento-list.html',
   styleUrl: './descuento-list.scss',
@@ -55,11 +60,10 @@ export class DescuentoListComponent implements AfterViewInit {
   
   readonly dataSource = new MatTableDataSource<DescuentoRead>([]);
   loading = true;
-  searchOpen = false;
-  dateSearchOpen = false;
   searchValue = '';
-  selectedDate = '';
-
+  
+  private allDescuentos: DescuentoRead[] = [];
+  private fechaFiltro: Date | null = null;
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
 
@@ -115,26 +119,30 @@ export class DescuentoListComponent implements AfterViewInit {
     this.reload();
   }
 
-  filtrarTabla(event: Event): void {
-    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
+  onDateSelected(fecha: Date | null): void {
+    this.fechaFiltro = fecha;
     this.applyFilters();
   }
 
-  filtrarFecha(event: Event): void {
-    this.selectedDate = (event.target as HTMLInputElement | null)?.value ?? '';
+  onTextSearch(value: string): void {
+    this.searchValue = value.trim().toLowerCase();
     this.applyFilters();
-  }
-
-  toggleSearch(): void {
-    this.searchOpen = !this.searchOpen;
-  }
-
-  toggleDateSearch(): void {
-    this.dateSearchOpen = !this.dateSearchOpen;
   }
 
   private applyFilters(): void {
-    this.dataSource.filter = serializeSearchState(this.searchValue.trim(), this.selectedDate);
+    let filtered = this.fechaFiltro
+      ? filterByDateRange(this.allDescuentos, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+      : [...this.allDescuentos];
+
+    if (this.searchValue) {
+      filtered = filtered.filter((row) =>
+        [row.codigo, row.porcentaje, row.monto_fijo, row.fecha_inicio, row.fecha_fin]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(this.searchValue))
+      );
+    }
+
+    this.dataSource.data = filtered;
     this.dataSource.paginator?.firstPage();
   }
 
@@ -142,6 +150,7 @@ export class DescuentoListComponent implements AfterViewInit {
     this.loading = true;
     this.descuentoService.list().subscribe({
       next: (rows) => {
+        this.allDescuentos = rows;
         this.dataSource.data = rows;
         this.loading = false;
       },

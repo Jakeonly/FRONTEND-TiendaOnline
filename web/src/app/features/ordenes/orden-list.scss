@@ -4,12 +4,27 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
-}
 
-.page-head h1 {
-  margin: 0;
-  font: var(--mat-sys-title-large);
-  font-weight: 700;
+  .page-head__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  h1 {
+    margin: 0;
+    font: var(--mat-sys-title-large);
+    font-weight: 700;
+  }
+
+  .page-head__search-field {
+    flex: 0 0 150px;
+  }
+
+  .page-head__date-field {
+    flex: 0 0 150px;
+  }
 }
 
 .loading {
@@ -23,13 +38,10 @@
   border-radius: 12px;
   background: var(--mat-sys-surface);
 }
-
 .actions {
   white-space: nowrap;
   text-align: right;
 }
-
-
 .status-badge {
   padding: 4px 12px;
   border-radius: 16px;

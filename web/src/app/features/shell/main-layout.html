@@ -13,7 +13,7 @@
       </div>
       @if (!sidebarCollapsed()) {
         <div class="nav-brand__text">
-          <span class="nav-brand__title">ITM Store</span>
+          <span class="nav-brand__title">Store</span>
           <span class="nav-brand__sub"> Tienda Online</span>
         </div>
       }
@@ -51,21 +51,6 @@
         </a>
       }
     </mat-nav-list>
-
-    <!-- Botón para Colapsar Menú -->
-    <div class="nav-footer">
-      <button 
-        mat-stroked-button 
-        type="button" 
-        class="collapse-btn" 
-        (click)="toggleSidebar()"
-      >
-        <mat-icon>{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-        @if (!sidebarCollapsed()) {
-          <span>Ocultar menú</span>
-        }
-      </button>
-    </div>
   </mat-sidenav>
 
   <!-- Contenido Principal -->
@@ -77,8 +62,6 @@
       </button>
       <span class="title">Panel de Control</span>
       <span class="spacer"></span>
-      
-      <!-- Ya no hay selector de auditoría por seguridad (JWT) -->
       
       <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
         <mat-icon>logout</mat-icon>

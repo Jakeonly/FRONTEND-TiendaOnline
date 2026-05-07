@@ -66,7 +66,7 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: () => {
         this.isSubmitting = false;
-        void this.router.navigate(['/app/productos']);
+        void this.router.navigate(['/app/demo-compra']);
       },
       error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;

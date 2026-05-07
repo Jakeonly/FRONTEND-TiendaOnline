@@ -45,7 +45,6 @@ export class UsuarioListComponent implements AfterViewInit {
   readonly displayedColumns = ['nombre_completo', 'email', 'rol', 'estado', 'acciones'];
   readonly dataSource = new MatTableDataSource<UsuarioRead>([]);
   loading = true;
-  searchOpen = false;
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -101,10 +100,6 @@ export class UsuarioListComponent implements AfterViewInit {
     const value = (event.target as HTMLInputElement | null)?.value ?? '';
     this.dataSource.filter = value.trim();
     this.dataSource.paginator?.firstPage();
-  }
-
-  toggleSearch(): void {
-    this.searchOpen = !this.searchOpen;
   }
 
   reload(): void {

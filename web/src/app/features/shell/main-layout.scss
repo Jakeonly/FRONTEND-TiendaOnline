@@ -1,7 +1,7 @@
 .shell {
   height: 100vh;
   --nav-expanded: 268px;
-  --nav-collapsed: 76px;
+  --nav-collapsed: 70px;
   --nav-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --nav-duration: 320ms;
 }
@@ -18,7 +18,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  transition: 
+  align-self: stretch;
+  transition:
     width var(--nav-duration) var(--nav-ease),
     max-width var(--nav-duration) var(--nav-ease);
   border-right: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 55%, transparent);
@@ -35,6 +36,23 @@
 .nav-rail.collapsed {
   width: var(--nav-collapsed);
   max-width: var(--nav-collapsed);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 64px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background: linear-gradient(
+    105deg,
+    var(--mat-sys-primary) 0%,
+    color-mix(in srgb, var(--mat-sys-tertiary) 55%, var(--mat-sys-primary)) 100%
+  ) !important;
+  color: var(--mat-sys-on-primary) !important;
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--mat-sys-primary) 28%, transparent);
 }
 
 .nav-brand {
@@ -59,7 +77,7 @@
     var(--mat-sys-primary) 0%,
     color-mix(in srgb, var(--mat-sys-tertiary) 65%, var(--mat-sys-primary)) 100%
   );
-  box-shadow: 
+  box-shadow:
     0 4px 14px color-mix(in srgb, var(--mat-sys-primary) 35%, transparent),
     inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
 }
@@ -112,15 +130,9 @@
   min-height: 100vh;
 }
 
-.top-bar {
-  background: linear-gradient(
-    105deg,
-    var(--mat-sys-primary) 0%,
-    color-mix(in srgb, var(--mat-sys-tertiary) 55%, var(--mat-sys-primary)) 100%
-  ) !important;
-  color: var(--mat-sys-on-primary) !important;
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--mat-sys-primary) 28%, transparent);
-}
+
+
+
 
 .spacer { flex: 1; }
 

@@ -1,39 +1,16 @@
 <div class="page-head">
   <div class="page-head__title-row">
-    <h1>Pagos</h1>
-    <button
-      mat-icon-button
-      type="button"
-      class="page-head__search-toggle"
-      (click)="toggleSearch()"
-      [attr.aria-label]="searchOpen ? 'Cerrar búsqueda' : 'Abrir búsqueda'"
-      [attr.aria-expanded]="searchOpen"
-    >
-      <mat-icon>{{ searchOpen ? 'close' : 'search' }}</mat-icon>
-    </button>
-    @if (searchOpen) {
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
-        <mat-label>Buscar...</mat-label>
-        <input matInput type="text" (input)="filtrarTabla($event)" />
-      </mat-form-field>
-    }
-
-    <button
-      mat-icon-button
-      type="button"
-      class="page-head__search-toggle"
-      (click)="toggleDateSearch()"
-      [attr.aria-label]="dateSearchOpen ? 'Cerrar filtro por fecha' : 'Abrir filtro por fecha'"
-      [attr.aria-expanded]="dateSearchOpen"
-    >
-      <mat-icon>{{ dateSearchOpen ? 'close' : 'calendar_today' }}</mat-icon>
-    </button>
-    @if (dateSearchOpen) {
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
-        <mat-label>Fecha</mat-label>
-        <input matInput type="date" (input)="filtrarFecha($event)" />
-      </mat-form-field>
-    }
+    <h1>Gestión de Pagos</h1>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput type="text" (input)="onTextSearch($any($event.target).value)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__date-field">
+      <mat-label>Fecha</mat-label>
+      <input matInput [matDatepicker]="picker" (dateChange)="onDateSelected($event.value)" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
   </div>
   <button mat-flat-button color="primary" type="button" (click)="nuevo()">
     <mat-icon>add</mat-icon>
