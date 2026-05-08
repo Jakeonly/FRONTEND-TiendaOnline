@@ -2,61 +2,105 @@
 
 ## Video de demostración
 
-video
+[Video presentación](https://youtu.be/uaZGFuPnIIk)
 
 ---
 
 ## Cómo correr el front (rápido)
 
-Requisitos previos:
+### Requisitos previos
 - Node.js (recomendado >= 16)
 - npm o yarn
 - Angular CLI (opcional, si usas `ng serve`)
 
-Opciones de ejecución:
+### Instalación y configuración
 
-- Opción A — desde la raíz del proyecto frontend:
+#### Opción A — desde la raíz del proyecto frontend:
 
-  1. Instalar dependencias:
+1. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-	  `npm install`
+2. **Configurar la URL del backend:**
+   
+   Abre `web/src/environments/environment.ts` y asegúrate de que la URL base de la API sea correcta:
+   ```typescript
+   export const environment = {
+     production: false,
+     apiUrl: 'http://localhost:8000'  // Ajusta según tu configuración del backend
+   };
+   ```
 
-  2. Ejecutar en modo desarrollo:
+   Para producción, edita `web/src/environments/environment.prod.ts`:
+   ```typescript
+   export const environment = {
+     production: true,
+     apiUrl: 'https://tu-backend.com'  // URL de tu backend en producción
+   };
+   ```
 
-	  `npm start`  (o `ng serve` si está disponible)
+3. **Ejecutar en modo desarrollo:**
+   ```bash
+   npm start
+   ```
+   (o `ng serve` si está disponible)
 
-- Opción B — si trabajas con el subproyecto `web/`:
+   La aplicación estará disponible en `http://localhost:4200`
 
-  1. Entrar en la carpeta `web`:
+#### Opción B — si trabajas con el subproyecto `web/`:
 
-	  `cd web`
+1. **Entrar en la carpeta `web`:**
+   ```bash
+   cd web
+   ```
 
-  2. Instalar dependencias:
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-	  `npm install`
+3. **Configurar la URL del backend:**
+   
+   Edita `src/environments/environment.ts` con la URL correcta (p. ej., `http://localhost:8000`)
 
-  3. Ejecutar en modo desarrollo:
+4. **Ejecutar en modo desarrollo:**
+   ```bash
+   npm start
+   ```
+   (o `ng serve`)
 
-	  `npm start`  (o `ng serve`)
+### Comandos útiles
 
-Comandos útiles:
+```bash
+# Build para producción
+npm run build
+# o
+ng build --configuration production
 
-- Build producción: `npm run build` o `ng build --configuration production`
-- Tests (si existen): `npm test`
-- Linter (si está configurado): `npm run lint`
+# Tests (si existen)
+npm test
 
-Si la aplicación necesita variables de entorno (URL del backend, claves), edítalas en los archivos de entorno en web/src/environments/ antes de levantar la app.
+# Linter (si está configurado)
+npm run lint
+```
+
+### Requisitos técnicos
+
+- **CORS y consumo desde el navegador**: El backend debe tener CORS configurado para aceptar peticiones desde `http://localhost:4200` (u origen del frontend en producción).
+- **Autenticación JWT**: El frontend almacena el token de forma segura y lo envía automáticamente en la cabecera `Authorization: Bearer <token>` en todas las peticiones autenticadas.
 
 ---
-
 ## Descripción general
 
-Frontend desarrollado con Angular y Angular Material. Provee una interfaz de administración y de cliente para la Tienda Online: navegación, autenticación, gestión de productos, carrito, pago y órdenes.
+Frontend desarrollado con **Angular 16+** y **Angular Material**. Proporciona una interfaz completa para la Tienda Online con autenticación, gestión de productos, carrito de compras, órdenes y más.
 
-**Estructura relevante**
-- Código fuente principal: web/src
-- Configuración Angular: angular.json
-- Entradas de la aplicación: web/src/app
+### Estructura relevante
+- **Código fuente principal**: `web/src`
+- **Configuración Angular**: `angular.json`
+- **Punto de entrada**: `web/src/app`
+- **Servicios y consumo de API**: `web/src/app/core/services`
+- **Modelos de datos**: `web/src/app/models`
 
 ---
 
@@ -83,20 +127,66 @@ Frontend desarrollado con Angular y Angular Material. Provee una interfaz de adm
 
 ## Notas para desarrolladores
 
-- Ajusta la URL del backend en `web/src/environments/environment.ts` (o en la configuración correspondiente).
-- Rutas principales esperadas (según estructura de features):
-  - `productos`, `categorias`, `carritos`, `ordenes`, `descuentos`, `usuarios`, `pagos`, `comprar`, `demo-compra`.
-- Componentes y servicios clave se encuentran en `web/src/app/features` y `web/src/app/core`.
+### Configuración de la API
+
+1. **URL del backend**: Configura la URL base de la API en los archivos de entorno:
+   - Desarrollo: `web/src/environments/environment.ts`
+   - Producción: `web/src/environments/environment.prod.ts`
+
+2. **Autenticación JWT**:
+   - El token se almacena en localStorage tras el login
+   - Se envía automáticamente en la cabecera `Authorization: Bearer <token>` en peticiones autenticadas
+   - El cierre de sesión limpia el token del cliente
+
+3. **CORS**: El backend debe tener CORS configurado para aceptar peticiones desde el origen del frontend.
+
+### Rutas principales del frontend
+
+- `/login` - Inicio de sesión
+- `/productos` - Catálogo de productos
+- `/categorias` - Navegación por categorías
+- `/carrito` - Carrito de compras
+- `/comprar` - Checkout y proceso de compra
+- `/ordenes` - Historial de órdenes
+- `/descuentos` - Gestión de cupones (si aplica)
+- `/usuarios` - Gestión de perfil (roles según permisos)
+- `/pagos` - Gestión de pagos
+
+### Consideraciones de seguridad
+
+- ✅ Tokens JWT almacenados en localStorage (puede mejorarse con httpOnly cookies)
+- ✅ Cabeceras de autorización en peticiones autenticadas
+- ✅ Validación de roles en cliente (siempre validar también en servidor)
+- ✅ CORS y credenciales correctamente configuradas
 
 ---
 
 ## Deploy
 
-- Generar build de producción:
+### Build para producción
 
-  `npm run build`  (o `ng build --configuration production`)
+```bash
+npm run build
+# o
+ng build --configuration production
+```
 
-- Servir los archivos estáticos generados en `dist/` con el servidor que prefieras (NGINX, Apache, Surge, Netlify, Vercel, etc.).
+Los archivos compilados estarán en `dist/`
+
+### Desplegar la aplicación
+
+Sube el contenido de `dist/` a cualquier servidor estático:
+- **NGINX / Apache**: Sirve los archivos estáticos desde `dist/`
+- **Netlify / Vercel**: Conecta tu repositorio y configura el comando `npm run build`
+- **Surge.sh / GitHub Pages**: Sigue sus instrucciones de despliegue
+- **Contenedor Docker**: Crea un Dockerfile que compile la app y sirva los archivos
+
+### Consideraciones para producción
+
+- ✅ Actualiza la URL del backend en `environment.prod.ts`
+- ✅ Configura los orígenes CORS en el backend para aceptar tu dominio de producción
+- ✅ Usa HTTPS en producción
+- ✅ Considera usar httpOnly cookies en lugar de localStorage para el token JWT
 
 ---
 © Proyecto Tienda Online — Frontend
