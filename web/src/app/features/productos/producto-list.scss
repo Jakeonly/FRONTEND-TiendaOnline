@@ -5,10 +5,21 @@
   gap: 16px;
   margin-bottom: 16px;
 
+  .page-head__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
   h1 {
     margin: 0;
     font: var(--mat-sys-title-large);
     font-weight: 700;
+  }
+
+  .page-head__search-field {
+    flex: 0 0 150px;
   }
 }
 

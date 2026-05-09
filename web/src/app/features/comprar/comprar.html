@@ -16,16 +16,23 @@
       <form [formGroup]="form" class="grid">
         <mat-form-field appearance="outline" class="span-2">
           <mat-label>Carrito</mat-label>
-          <mat-select formControlName="carrito_id">
-            @for (carrito of carritos; track carrito.id) {
-              <mat-option [value]="carrito.id">
-                {{ shortId(carrito.id) }} - {{ getUsuarioNombre(carrito.usuario_id) }}
-              </mat-option>
+          <mat-select formControlName="carrito_id" [disabled]="carritoBloqueado">
+            @if (carritosPendientes.length > 0) {
+              @for (carrito of carritosPendientes; track carrito.id) {
+                <mat-option [value]="carrito.id">
+                  {{ shortId(carrito.id) }} - {{ getUsuarioNombre(carrito.usuario_id) }}
+                </mat-option>
+              }
+            } @else {
+              <mat-option disabled>No hay carritos pendientes</mat-option>
             }
           </mat-select>
+          @if (carritoBloqueado) {
+            <mat-hint>Carrito creado seleccionado.</mat-hint>
+          }
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline">
           <mat-label>Método de pago</mat-label>
           <mat-select formControlName="metodo_pago">
             <mat-option value="Efectivo">Efectivo</mat-option>
@@ -40,13 +47,14 @@
           <input matInput formControlName="descuento_codigo" placeholder="Código opcional" />
         </mat-form-field>
 
-        <button mat-stroked-button type="button" class="verify-button" (click)="verificarCupon()">
-          Verificar cupón
-        </button>
-
-        <mat-checkbox formControlName="registrar_pago" class="span-2">
-          Registrar pago y marcar la orden como pagada
-        </mat-checkbox>
+        <div class="coupon-actions span-2">
+          <button mat-stroked-button type="button" class="coupon-action-button" (click)="verificarCupon()">
+            Verificar cupón
+          </button>
+          <button mat-stroked-button type="button" class="coupon-action-button" (click)="limpiarCupon()">
+            Limpiar cupón
+          </button>
+        </div>
       </form>
 
       @if (carritoSeleccionado) {
@@ -67,6 +75,29 @@
             <div class="coupon-state">{{ mensajeCupon }}</div>
           }
         </mat-card>
+
+        <div class="purchase-actions">
+          <button
+            mat-stroked-button
+            type="button"
+            class="purchase-action-button purchase-action-button--secondary"
+            (click)="liberarCarrito()"
+            [disabled]="processing || !carritoSeleccionado"
+          >
+            Liberar carrito
+          </button>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            class="purchase-action-button"
+            (click)="generarOrden()"
+            [disabled]="processing || !tieneItems || !carritoSeleccionado"
+          >
+            {{ processing ? 'Procesando...' : 'Generar orden' }}
+          </button>
+        </div>
       }
     </section>
 
@@ -111,21 +142,31 @@
           <span>Total bruto</span>
           <strong>{{ totalBruto | price }}</strong>
         </div>
-        <div class="summary-row">
-          <span>Estado inicial</span>
-          <strong>Pendiente</strong>
+        @if (descuentoAplicado) {
+          <div class="summary-row summary-row--discount">
+            <span>Descuento {{ descuentoAplicado.codigo }}</span>
+            <strong>{{ etiquetaDescuentoAplicado }}</strong>
+          </div>
+        }
+        <div class="summary-row summary-row--total">
+          <span>Total a pagar</span>
+          <strong>{{ totalMostrado | price }}</strong>
         </div>
         <div class="summary-row">
-          <span>Pago</span>
-          <strong>{{ form.controls.registrar_pago.value ? form.controls.metodo_pago.value : 'Sin pago' }}</strong>
+          <span>Orden</span>
+          <strong>{{ puedeConfirmarCompra ? 'Pendiente generada' : 'Sin orden generada' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Método de pago</span>
+          <strong>{{ form.controls.metodo_pago.value }}</strong>
         </div>
         <button
           mat-flat-button
           color="primary"
           type="button"
           class="process-button"
-          (click)="procesarCompra()"
-          [disabled]="processing || !tieneItems"
+          (click)="confirmarCompra()"
+          [disabled]="processing || !puedeConfirmarCompra"
         >
           {{ processing ? 'Procesando...' : 'Confirmar compra' }}
         </button>

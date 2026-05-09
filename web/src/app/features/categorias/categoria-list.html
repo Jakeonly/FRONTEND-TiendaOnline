@@ -1,6 +1,18 @@
 <div class="page-head">
-  <h1>Categorías</h1>
-  <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage">
+  <div class="page-head__left">
+    <h1>Gestión de Categorías</h1>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput type="text" (input)="onTextSearch($any($event.target).value)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__date-field">
+      <mat-label>Fecha</mat-label>
+      <input matInput [matDatepicker]="picker" (dateChange)="onDateSelected($event.value)" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
+  <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage" class="page-head__button-right">
     <mat-icon>add</mat-icon>
     Nueva
   </button>

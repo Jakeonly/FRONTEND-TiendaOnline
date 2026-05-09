@@ -2,12 +2,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
@@ -15,6 +19,7 @@ import { CategoriaService } from '../../core/services/categoria.service';
 import { CategoriaRead } from '../../models/api.models';
 import { CategoriaDialogComponent, CategoriaDialogData } from './categoria-dialog';
 import { AuthService } from '../../core/auth/auth.service';
+import { filterByDateRange } from '../../shared/date-range.utils';
 
 @Component({
   selector: 'app-categoria-list',
@@ -26,6 +31,10 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -43,6 +52,10 @@ export class CategoriaListComponent implements AfterViewInit {
   readonly displayedColumns = ['nombre', 'descripcion', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CategoriaRead>([]);
   loading = true;
+
+  private allCategorias: CategoriaRead[] = [];
+  private searchValue = '';
+  private fechaFiltro: Date | null = null;
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -91,11 +104,39 @@ export class CategoriaListComponent implements AfterViewInit {
     this.reload();
   }
 
+  onDateSelected(fecha: Date | null): void {
+    this.fechaFiltro = fecha;
+    this.applyFilters();
+  }
+
+  onTextSearch(value: string): void {
+    this.searchValue = value.trim().toLowerCase();
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let filtered = this.fechaFiltro
+      ? filterByDateRange(this.allCategorias, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+      : [...this.allCategorias];
+
+    if (this.searchValue) {
+      filtered = filtered.filter((row) =>
+        [row.nombre, row.descripcion, row.fecha_creacion]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(this.searchValue))
+      );
+    }
+
+    this.dataSource.data = filtered;
+    this.dataSource.paginator?.firstPage();
+  }
+
   reload(): void {
     this.loading = true;
     this.svc.list().subscribe({
       next: (rows) => {
-        this.dataSource.data = rows;
+        this.allCategorias = rows;
+        this.applyFilters();
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {

@@ -1,0 +1,112 @@
+<div class="page-head">
+  <div>
+    <h1>Demo Compra</h1>
+    <p>Selecciona productos, ajusta cantidades con stock real y genera un carrito pendiente.</p>
+  </div>
+</div>
+
+@if (loading) {
+  <div class="loading">
+    <mat-spinner />
+  </div>
+} @else {
+  <div class="demo-layout">
+    <section class="catalog-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Catálogo</h2>
+          <p>{{ productos.length }} productos disponibles</p>
+        </div>
+        <div class="selected-pill">
+          <mat-icon>shopping_cart</mat-icon>
+          <span>{{ cantidadSeleccionada }} seleccionados</span>
+        </div>
+      </div>
+
+      <div class="catalog-grid">
+        @for (producto of productos; track producto.id) {
+          <mat-card class="product-card" [class.has-selection]="producto.cantidadSeleccionada > 0">
+            <div class="product-card__header">
+              <div>
+                <h3>{{ producto.nombre }}</h3>
+                <p>{{ producto.descripcion || 'Sin descripción disponible' }}</p>
+              </div>
+              <span class="stock-badge" [class.stock-low]="producto.stock <= 5">
+                Stock: {{ producto.stock }}
+              </span>
+            </div>
+
+            <div class="product-card__footer">
+              <strong>{{ producto.precio | price }}</strong>
+
+              <div class="qty-control" aria-label="Selector de cantidad">
+                <button mat-icon-button type="button" (click)="decrementar(producto)" [disabled]="producto.cantidadSeleccionada === 0">
+                  <mat-icon>remove</mat-icon>
+                </button>
+
+                <span class="qty-value">{{ producto.cantidadSeleccionada }}</span>
+
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="incrementar(producto)"
+                  [disabled]="producto.cantidadSeleccionada >= producto.stock"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+          </mat-card>
+        }
+      </div>
+    </section>
+
+    <aside class="cart-float mat-elevation-z8">
+      <div class="cart-head">
+        <div>
+          <h2>Carrito</h2>
+          <p>{{ carritoResumen.length }} productos seleccionados</p>
+        </div>
+        <mat-icon>shopping_bag</mat-icon>
+      </div>
+
+      @if (carritoVacio) {
+        <div class="empty-state">
+          El carrito aún está vacío.
+        </div>
+      } @else {
+        <div class="cart-items">
+          @for (item of carritoResumen; track item.productoId) {
+            <div class="cart-item">
+              <div>
+                <strong>{{ item.nombre }}</strong>
+                <span>{{ item.cantidad }} x {{ item.precioUnitario | price }}</span>
+              </div>
+              <strong>{{ item.subtotal | price }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="cart-total">
+          <span>Total</span>
+          <strong>{{ totalSeleccionado | price }}</strong>
+        </div>
+      }
+
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        class="generate-button"
+        (click)="generarCarrito()"
+        [disabled]="processing || carritoVacio"
+      >
+        {{ processing ? 'Generando...' : 'Generar carrito' }}
+      </button>
+
+      <button mat-stroked-button type="button" class="clear-button" (click)="limpiarCarrito()" [disabled]="processing || carritoVacio">
+        Limpiar selección
+      </button>
+    </aside>
+  </div>
+}

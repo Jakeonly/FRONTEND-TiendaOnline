@@ -82,6 +82,7 @@ export interface OrdenRead {
   total: number;
   estado: string; // 'pendiente' por defecto
   usuario_id: UUID;
+  carrito_id?: UUID;
   descuento_id?: UUID;
   fecha_creacion: string;
 }
@@ -89,6 +90,7 @@ export interface OrdenRead {
 export interface OrdenCreate {
   total: number;
   usuario_id: UUID;
+  carrito_id?: UUID;
   descuento_id?: UUID;
   estado?: string;
 }
@@ -97,6 +99,7 @@ export interface OrdenUpdate {
   estado?: string;
   total?: number;
   descuento_id?: UUID | null;
+  carrito_id?: UUID | null;
 }
 
 // --- 5. DETALLE ORDEN ---

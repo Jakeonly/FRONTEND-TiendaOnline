@@ -57,6 +57,16 @@
   padding: 8px 0;
 }
 
+.error-banner {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, #d32f2f 42%, transparent);
+  background: color-mix(in srgb, #d32f2f 10%, transparent);
+  color: #b71c1c;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  padding: 12px 14px;
+}
+
 .full {
   width: 100%;
 }

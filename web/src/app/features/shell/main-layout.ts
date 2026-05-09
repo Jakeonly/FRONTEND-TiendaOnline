@@ -33,7 +33,12 @@ export class MainLayoutComponent {
 
   private readonly adminOnlyPaths = new Set(['carritos', 'descuentos', 'usuarios', 'pagos']);
 
-  readonly menuItems = [
+  readonly featuredMenuItems = [
+    { path: 'demo-compra', label: 'Demo Compra', icon: 'storefront' },
+    { path: 'comprar', label: 'Comprar', icon: 'shopping_bag' },
+  ];
+
+  readonly baseMenuItems = [
     { path: 'productos', label: 'Productos', icon: 'inventory_2' },
     { path: 'categorias', label: 'Categorías', icon: 'category' },
     { path: 'carritos', label: 'Carritos', icon: 'shopping_cart' },
@@ -41,8 +46,9 @@ export class MainLayoutComponent {
     { path: 'descuentos', label: 'Cupones', icon: 'sell' },
     { path: 'usuarios', label: 'Usuarios', icon: 'group' },
     { path: 'pagos', label: 'Pagos', icon: 'payments' },
-    { path: 'comprar', label: 'Comprar', icon: 'shopping_bag' },
   ].filter((item) => this.authService.isAdmin() || !this.adminOnlyPaths.has(item.path));
+
+  readonly secondaryMenuItems = this.baseMenuItems;
 
   logout(): void {
     this.authService.logout();

@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -16,6 +18,7 @@ import { DetalleCarritoRead } from '../../models/api.models';
 import { DetalleCarritoDialogComponent, DetalleCarritoDialogData } from './detalle-carrito-dialog';
 import { PricePipe } from '../../shared/price.pipe';
 import { AuthService } from '../../core/auth/auth.service';
+import { createTextFilterPredicate } from '../../shared/table-search';
 
 @Component({
   selector: 'app-detalle-carrito-list',
@@ -27,6 +30,8 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -102,7 +107,14 @@ export class DetalleCarritoListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextFilterPredicate((row) => this.buildSearchText(row));
     this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.dataSource.filter = value.trim();
+    this.dataSource.paginator?.firstPage();
   }
 
   reload(): void {
@@ -145,6 +157,16 @@ export class DetalleCarritoListComponent implements AfterViewInit {
       },
       error: (err: HttpErrorResponse) => this.snack.open(this.msg(err), 'Cerrar', { duration: 6000 }),
     });
+  }
+
+  private buildSearchText(row: DetalleCarritoRead): string {
+    return [
+      row.id,
+      row.carrito_id,
+      row.producto_id,
+      row.cantidad,
+      row.precio_unitario,
+    ].join(' ');
   }
 
   private msg(err: HttpErrorResponse): string {

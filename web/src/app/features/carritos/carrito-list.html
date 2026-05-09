@@ -1,5 +1,17 @@
 <div class="page-head">
-  <h1>Gestión de Carritos</h1>
+  <div class="page-head__title-row">
+    <h1>Gestión de Carritos</h1>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput type="text" (input)="onTextSearch($any($event.target).value)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="page-head__date-field">
+      <mat-label>Fecha</mat-label>
+      <input matInput [matDatepicker]="picker" (dateChange)="onDateSelected($event.value)" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
   <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="!canManage">
     <mat-icon>add_shopping_cart</mat-icon>
     Nuevo Carrito

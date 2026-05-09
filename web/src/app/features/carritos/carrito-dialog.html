@@ -2,18 +2,25 @@
 
 <mat-dialog-content class="dialog-body">
   <form [formGroup]="form" class="grid">
-    
-    <!-- Usuario ID -->
-    <mat-form-field style="padding-top: 1%;" appearance="outline" class="span-2">
-      <mat-label>ID del Usuario</mat-label>
-      <input matInput formControlName="usuario_id" placeholder="Ingrese el UUID del usuario" />
+    <mat-form-field appearance="outline" class="span-2">
+      <mat-label>Usuario</mat-label>
+      <mat-select formControlName="usuario_id">
+        @if (usuarios.length > 0) {
+          @for (usuario of usuarios; track usuario.id) {
+            <mat-option [value]="usuario.id">
+              {{ usuario.nombre_completo }} - {{ usuario.email }}
+            </mat-option>
+          }
+        } @else {
+          <mat-option disabled>No hay usuarios disponibles</mat-option>
+        }
+      </mat-select>
       <mat-icon matSuffix>person</mat-icon>
-      
-      <!-- Mensaje de error dinámico -->
+
       @if (form.controls.usuario_id.hasError('required')) {
-        <mat-error>El ID del usuario es <strong>obligatorio</strong></mat-error>
+        <mat-error>Debes seleccionar un <strong>usuario</strong></mat-error>
       }
-      <mat-hint>Vincule este carrito a un usuario existente</mat-hint>
+      <mat-hint>Vincula este carrito a un usuario existente</mat-hint>
     </mat-form-field>
 
   </form>

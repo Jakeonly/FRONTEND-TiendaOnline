@@ -1,20 +1,26 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { CommonModule } from '@angular/common';
+import { MatNativeDateModule } from '@angular/material/core';
+import { filterByDateRange } from '../../shared/date-range.utils';
 
 import { PagoService } from '../../core/services/pago.service';
 import { shortId } from '../../shared/ids';
 import { PagoDialogComponent } from './pago-dialog';
 import { PricePipe } from '../../shared/price.pipe';
+import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
   selector: 'app-pago-list',
@@ -26,10 +32,14 @@ import { PricePipe } from '../../shared/price.pipe';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatTooltipModule,
+    MatDatepickerModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     PricePipe,
+    MatNativeDateModule
   ],
   templateUrl: './pago-list.html',
   styleUrl: './pago-list.scss',
@@ -39,10 +49,14 @@ export class PagoListComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly shortId = shortId;
+  private fechaFiltro: Date | null = null;
 
   readonly displayedColumns = ['id', 'orden_id', 'monto', 'metodo', 'estado', 'fecha', 'acciones'];
   readonly dataSource = new MatTableDataSource<any>([]);
   loading = true;
+  searchValue = '';
+  
+  private allPagos: any[] = [];
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -61,6 +75,10 @@ export class PagoListComponent implements AfterViewInit {
 
   constructor() {
     // Configure sorting data accessor BEFORE any data is loaded
+    this.dataSource.filterPredicate = createTextAndDateFilterPredicate<any>(
+      (row) => [row.fecha_edicion || row.fecha_creacion],
+      (row) => this.buildSearchText(row),
+    );
     this.dataSource.sortingDataAccessor = (row: any, columnName: string) => {
       const value = row[columnName];
       if (typeof value === 'string') return value.toLowerCase();
@@ -81,6 +99,33 @@ export class PagoListComponent implements AfterViewInit {
     this.attachTableHelpers();
   }
 
+  onDateSelected(fecha: Date | null): void {
+    this.fechaFiltro = fecha;
+    this.applyFilters();
+  }
+
+  onTextSearch(value: string): void {
+    this.searchValue = value.trim().toLowerCase();
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let filtered = this.fechaFiltro
+      ? filterByDateRange(this.allPagos, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+      : [...this.allPagos];
+
+    if (this.searchValue) {
+      filtered = filtered.filter((row) =>
+        [row.id, row.orden_id, row.monto, row.metodo, row.estado, row.fecha_creacion]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(this.searchValue))
+      );
+    }
+
+    this.dataSource.data = filtered;
+    this.dataSource.paginator?.firstPage();
+  }
+
   private attachTableHelpers(): void {
     if (this.paginatorRef) {
       this.dataSource.paginator = this.paginatorRef;
@@ -94,6 +139,7 @@ export class PagoListComponent implements AfterViewInit {
     this.loading = true;
     this.svc.list().subscribe({
       next: (rows) => {
+        this.allPagos = rows;
         this.dataSource.data = rows;
         this.loading = false;
       },
@@ -110,6 +156,18 @@ export class PagoListComponent implements AfterViewInit {
 
   editar(row: any): void {
     this.openDialog({ mode: 'edit', row });
+  }
+
+  private buildSearchText(row: any): string {
+    return [
+      row.id,
+      shortId(row.id),
+      row.orden_id,
+      shortId(row.orden_id),
+      row.monto,
+      row.metodo,
+      row.estado,
+    ].join(' ');
   }
 
   async copiarId(row: any): Promise<void> {

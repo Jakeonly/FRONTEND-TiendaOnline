@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -18,6 +20,7 @@ import { CategoriaRead, ProductoRead } from '../../models/api.models';
 import { ProductoDialogComponent, ProductoDialogData } from './producto-dialog';
 import { PricePipe } from '../../shared/price.pipe';
 import { AuthService } from '../../core/auth/auth.service';
+import { createTextFilterPredicate } from '../../shared/table-search';
 
 @Component({
   selector: 'app-producto-list',
@@ -29,6 +32,8 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -99,7 +104,14 @@ export class ProductoListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextFilterPredicate((row) => this.buildSearchText(row));
     this.reload();
+  }
+
+  filtrarTabla(event: Event): void {
+    const value = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.dataSource.filter = value.trim();
+    this.dataSource.paginator?.firstPage();
   }
 
   reload(): void {
@@ -124,6 +136,18 @@ export class ProductoListComponent implements AfterViewInit {
   categoriaNombre(id: string | null | undefined): string {
     if (!id) return '—';
     return this.categoriasPorId.get(id) ?? '—';
+  }
+
+  private buildSearchText(row: ProductoRead): string {
+    return [
+      row.id,
+      row.nombre,
+      row.descripcion,
+      row.precio,
+      row.stock,
+      row.categoria_id,
+      this.categoriaNombre(row.categoria_id),
+    ].join(' ');
   }
 
   nuevo(): void {

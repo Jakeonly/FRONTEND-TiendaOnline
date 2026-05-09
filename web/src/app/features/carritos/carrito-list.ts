@@ -3,7 +3,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -18,6 +22,8 @@ import { CarritoDialogComponent, CarritoDialogData } from './carrito-dialog';
 import { shortId } from '../../shared/ids';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { filterByDateRange } from '../../shared/date-range.utils';
+import { createTextAndDateFilterPredicate, serializeSearchState } from '../../shared/table-search';
 
 @Component({
   selector: 'app-carrito-list',
@@ -29,6 +35,10 @@ import { AuthService } from '../../core/auth/auth.service';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -49,6 +59,10 @@ export class CarritoListComponent implements AfterViewInit {
   readonly displayedColumns = ['id', 'usuario_nombre', 'estado', 'fecha_creacion', 'acciones'];
   readonly dataSource = new MatTableDataSource<CarritoRead>([]);
   loading = true;
+  private searchValue = '';
+  private fechaFiltro: Date | null = null;
+  
+  private allCarritos: CarritoRead[] = [];
 
   private paginatorRef?: MatPaginator;
   private sortRef?: MatSort;
@@ -96,8 +110,57 @@ export class CarritoListComponent implements AfterViewInit {
   }
 
   constructor() {
+    this.dataSource.filterPredicate = createTextAndDateFilterPredicate<CarritoRead>(
+      (row) => [row.fecha_creacion],
+      (row) => this.buildSearchText(row),
+    );
     this.reload();
   }
+
+  filtrarTabla(event: Event): void {
+    this.searchValue = (event.target as HTMLInputElement | null)?.value ?? '';
+    this.applyFilters();
+  }
+
+  onDateSelected(fecha: Date | null): void {
+    this.fechaFiltro = fecha;
+    this.applyFilters();
+  }
+
+  onTextSearch(value: string): void {
+    this.searchValue = value.trim().toLowerCase();
+    this.applyFilters();
+  }
+
+  /**
+  private applyFilters(): void {
+    let filtered = this.fechaFiltro
+    // Aplicar filtro de búsqueda de texto
+    this.dataSource.data = filtered;
+    if (this.searchValue.trim()) {
+      this.dataSource.filter = serializeSearchState(this.searchValue.trim(), '');
+    } else {
+      this.dataSource.filter = '';
+    }
+    this.dataSource.paginator?.firstPage();
+  }
+  **/
+  private applyFilters(): void {
+      let filtered = this.fechaFiltro
+        ? filterByDateRange(this.allCarritos, this.fechaFiltro, '00:00', '23:59', 'fecha_creacion')
+        : [...this.allCarritos];
+  
+      if (this.searchValue) {
+        filtered = filtered.filter((row) =>
+          [row.usuario_id, row.estado, row.fecha_creacion]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(this.searchValue))
+        );
+      }
+  
+      this.dataSource.data = filtered;
+      this.dataSource.paginator?.firstPage();
+    }
 
   reload(): void {
     this.loading = true;
@@ -110,6 +173,7 @@ export class CarritoListComponent implements AfterViewInit {
         usuarios.forEach((usuario: UsuarioRead) =>
           this.usuariosPorId.set(usuario.id, usuario.nombre_completo)
         );
+        this.allCarritos = carritos;
         this.dataSource.data = carritos;
         this.loading = false;
       },
@@ -131,6 +195,17 @@ export class CarritoListComponent implements AfterViewInit {
 
   getUsuarioNombre(usuarioId: string): string {
     return this.usuariosPorId.get(usuarioId) ?? shortId(usuarioId);
+  }
+
+  private buildSearchText(row: CarritoRead): string {
+    return [
+      row.id,
+      shortId(row.id),
+      row.usuario_id,
+      shortId(row.usuario_id),
+      this.getUsuarioNombre(row.usuario_id),
+      row.estado,
+    ].join(' ');
   }
 
   estadoClass(estado: string | null | undefined): string {
